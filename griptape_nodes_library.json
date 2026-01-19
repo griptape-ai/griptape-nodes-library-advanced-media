@@ -73,13 +73,7 @@
     },
     "resources": {
       "required": {
-        "compute": [
-          [
-            "cuda",
-            "mps"
-          ],
-          "has_any"
-        ]
+        "compute": [["cuda", "mps"], "has_any"]
       }
     }
   },
