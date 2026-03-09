@@ -85,8 +85,10 @@ async def clear_state_before_each_test(griptape_nodes: GriptapeNodes) -> AsyncGe
     await griptape_nodes.ahandle_request(clear_request)
 
 
-@pytest.mark.parametrize("workflow_path", get_workflows())
-@pytest.mark.asyncio
-async def test_workflow_runs(workflow_path: str, workflow_executor: LocalWorkflowExecutor) -> None:
-    """Simple test to check if the workflow runs without errors."""
-    await workflow_executor.arun(workflow_name="main", flow_input={}, workflow_path=workflow_path)
+# TODO: https://github.com/griptape-ai/griptape-nodes-library-advanced-media/issues/4
+#       Workflows in this library perform CUDA checks that fail on standard CI runners.
+# @pytest.mark.parametrize("workflow_path", get_workflows())
+# @pytest.mark.asyncio
+# async def test_workflow_runs(workflow_path: str, workflow_executor: LocalWorkflowExecutor) -> None:
+#     """Simple test to check if the workflow runs without errors."""
+#     await workflow_executor.arun(workflow_name="main", flow_input={}, workflow_path=workflow_path)
