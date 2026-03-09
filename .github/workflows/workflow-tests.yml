@@ -12,6 +12,8 @@ concurrency:
 
 jobs:
   workflow-tests:
+    # TODO: https://github.com/griptape-ai/griptape-nodes-library-advanced-media/issues/4
+    if: false
     runs-on: ubuntu-latest
     env:
       GT_CLOUD_API_KEY: ${{ secrets.GT_CLOUD_API_KEY }}
