@@ -35,4 +35,7 @@ jobs:
         run: uv pip install --system griptape-nodes pytest pytest-asyncio python-dotenv
 
       - name: Run workflow tests
-        run: pytest -s tests/workflows
+        run: |
+          pytest -s tests/workflows
+          exit_code=$?
+          [ $exit_code -eq 5 ] && exit 0 || exit $exit_code
