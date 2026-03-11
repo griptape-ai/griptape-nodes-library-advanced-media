@@ -68,14 +68,6 @@ class QwenInpaintPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
         )
         self._node.add_parameter(
             Parameter(
-                name="guidance_scale",
-                default_value=4.0,
-                type="float",
-                tooltip="Higher guidance_scale encourages generation more aligned with prompt at expense of image quality",
-            )
-        )
-        self._node.add_parameter(
-            Parameter(
                 name="strength",
                 default_value=0.6,
                 type="float",
@@ -99,7 +91,6 @@ class QwenInpaintPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
         self._node.remove_parameter_element_by_name("prompt")
         self._node.remove_parameter_element_by_name("negative_prompt")
         self._node.remove_parameter_element_by_name("true_cfg_scale")
-        self._node.remove_parameter_element_by_name("guidance_scale")
         self._node.remove_parameter_element_by_name("strength")
         self._node.remove_parameter_element_by_name("padding_mask_crop")
 
@@ -127,7 +118,6 @@ class QwenInpaintPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
             "prompt": self._node.get_parameter_value("prompt"),
             "negative_prompt": self._node.get_parameter_value("negative_prompt"),
             "true_cfg_scale": self._node.get_parameter_value("true_cfg_scale"),
-            "guidance_scale": self._node.get_parameter_value("guidance_scale"),
             "strength": self._node.get_parameter_value("strength"),
         }
 
