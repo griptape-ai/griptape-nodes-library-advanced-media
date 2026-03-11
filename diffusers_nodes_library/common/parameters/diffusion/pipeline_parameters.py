@@ -73,6 +73,9 @@ from diffusers_nodes_library.common.parameters.diffusion.qwen.edit_runtime_param
 from diffusers_nodes_library.common.parameters.diffusion.qwen.img2img_runtime_parameters import (
     QwenImg2ImgPipelineRuntimeParameters,
 )
+from diffusers_nodes_library.common.parameters.diffusion.qwen.inpaint_runtime_parameters import (
+    QwenInpaintPipelineRuntimeParameters,
+)
 from diffusers_nodes_library.common.parameters.diffusion.qwen.layered_runtime_parameters import (
     QwenLayeredPipelineRuntimeParameters,
 )
@@ -189,6 +192,10 @@ class DiffusionPipelineParameters:
                 self._runtime_parameters = QwenEditPipelineRuntimeParameters(self._node)
             case "QwenImageEditPlusPipeline":
                 self._runtime_parameters = QwenImageEditPlusPipelineRuntimeParameters(self._node)
+            case "QwenImageEditInpaintPipeline":
+                self._runtime_parameters = QwenInpaintPipelineRuntimeParameters(self._node)
+            case "QwenImageInpaintPipeline":
+                self._runtime_parameters = QwenInpaintPipelineRuntimeParameters(self._node)
             case "QwenImageUpscalePipeline":
                 self._runtime_parameters = QwenUpscalePipelineRuntimeParameters(self._node)
             case "QwenImageControlNetPipeline":
