@@ -18,12 +18,14 @@ class StableDiffusionPipelineParameters(DiffusionPipelineTypePipelineParameters)
         self._huggingface_repo_parameter = HuggingFaceRepoParameter(
             node,
             repo_ids=[
-                "stabilityai/stable-diffusion-2-1",
-                "stabilityai/stable-diffusion-2",
                 "CompVis/stable-diffusion-v1-4",
                 "CompVis/stable-diffusion-v1-3",
                 "CompVis/stable-diffusion-v1-2",
                 "CompVis/stable-diffusion-v1-1",
+            ],
+            deprecated_repo_ids=[
+                "stabilityai/stable-diffusion-2-1",
+                "stabilityai/stable-diffusion-2",
             ],
             list_all_models=list_all_models,
         )

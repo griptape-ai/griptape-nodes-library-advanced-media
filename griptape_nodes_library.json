@@ -28,8 +28,8 @@
   "metadata": {
     "author": "Griptape, Inc.",
     "description": "Advanced media generation and manipulation nodes for Griptape Nodes.",
-    "library_version": "0.66.8",
-    "engine_version": "0.67.0",
+    "library_version": "0.66.9",
+    "engine_version": "0.77.3",
     "tags": [
       "Griptape",
       "AI"
