@@ -12,11 +12,17 @@ from diffusers_nodes_library.common.parameters.diffusion.qwen.controlnet_paramet
 from diffusers_nodes_library.common.parameters.diffusion.qwen.edit_parameters import (
     QwenEditPipelineParameters,
 )
+from diffusers_nodes_library.common.parameters.diffusion.qwen.edit_inpaint_parameters import (
+    QwenImageEditInpaintPipelineParameters,
+)
 from diffusers_nodes_library.common.parameters.diffusion.qwen.edit_plus_parameters import (
     QwenImageEditPlusPipelineParameters,
 )
 from diffusers_nodes_library.common.parameters.diffusion.qwen.img2img_parameters import (
     QwenImg2ImgPipelineParameters,
+)
+from diffusers_nodes_library.common.parameters.diffusion.qwen.inpaint_parameters import (
+    QwenInpaintPipelineParameters,
 )
 from diffusers_nodes_library.common.parameters.diffusion.qwen.layered_parameters import (
     QwenLayeredPipelineParameters,
@@ -35,7 +41,9 @@ QwenPipelineTypeDict: dict[str, type[DiffusionPipelineTypePipelineParameters]] =
     "QwenImagePipeline": QwenPipelineParameters,
     "QwenImageImg2ImgPipeline": QwenImg2ImgPipelineParameters,
     "QwenImageEditPipeline": QwenEditPipelineParameters,
+    "QwenImageEditInpaintPipeline": QwenImageEditInpaintPipelineParameters,
     "QwenImageEditPlusPipeline": QwenImageEditPlusPipelineParameters,
+    "QwenImageInpaintPipeline": QwenInpaintPipelineParameters,
     "QwenImageUpscalePipeline": QwenUpscalePipelineParameters,
     "QwenImageControlNetPipeline": QwenImageControlNetPipelineParameters,
     "QwenImageLayeredPipeline": QwenLayeredPipelineParameters,
