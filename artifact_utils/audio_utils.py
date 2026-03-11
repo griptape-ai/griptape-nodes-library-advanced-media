@@ -1,12 +1,11 @@
 import base64
-import uuid
 
 from griptape.artifacts.audio_url_artifact import AudioUrlArtifact
 
 
 def dict_to_audio_url_artifact(audio_dict: dict, audio_format: str | None = None) -> AudioUrlArtifact:
     """Convert a dictionary representation of audio to an AudioUrlArtifact."""
-    from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
+    from griptape_nodes.files.project_file import ProjectFileDestination
 
     value = audio_dict["value"]
 
@@ -29,8 +28,8 @@ def dict_to_audio_url_artifact(audio_dict: dict, audio_format: str | None = None
         else:
             audio_format = "mp3"
 
-    # Save to static file server
-    filename = f"{uuid.uuid4()}.{audio_format}"
-    url = GriptapeNodes.StaticFilesManager().save_static_file(audio_bytes, filename)
+    # Save to project file
+    dest = ProjectFileDestination(filename=f"audio.{audio_format}", situation="save_node_output")
+    saved = dest.write_bytes(audio_bytes)
 
-    return AudioUrlArtifact(url)
+    return AudioUrlArtifact(saved.location)

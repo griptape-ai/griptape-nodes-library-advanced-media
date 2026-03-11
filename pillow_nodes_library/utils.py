@@ -1,5 +1,4 @@
 import io
-import uuid
 
 import PIL.Image
 import PIL.ImageOps
@@ -21,6 +20,8 @@ def pil_to_image_artifact(pil_image: Image, directory_path: str = "") -> ImageUr
     pil_image.save(image_io, "PNG")
     image_bytes = image_io.getvalue()
 
+    from griptape_nodes.files.project_file import ProjectFileDestination
+
     if directory_path:
         # Perform cleanup if needed before saving new file
         cleanup_enabled = GriptapeNodes.ConfigManager().get_config_value(
@@ -35,14 +36,13 @@ def pil_to_image_artifact(pil_image: Image, directory_path: str = "") -> ImageUr
             max_size_gb = GriptapeNodes.ConfigManager().get_config_value("advanced_media_library.max_directory_size_gb")
             GriptapeNodes.OSManager().cleanup_directory_if_needed(full_directory_path=path, max_size_gb=max_size_gb)
 
-        # Now set the file name.
-        filename = f"{directory_path}/{uuid.uuid4()}.png"
+        dest = ProjectFileDestination(filename=f"{directory_path}/image.png", situation="save_node_output")
     else:
         # No directory prefix - direct storage
-        filename = f"{uuid.uuid4()}.png"
+        dest = ProjectFileDestination(filename="image.png", situation="save_node_output")
 
-    url = GriptapeNodes.StaticFilesManager().save_static_file(image_bytes, filename)
-    return ImageUrlArtifact(url)
+    saved = dest.write_bytes(image_bytes)
+    return ImageUrlArtifact(saved.location)
 
 
 def video_url_artifact_to_pil_images(video_artifact: VideoUrlArtifact) -> list[Image]:

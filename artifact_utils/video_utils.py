@@ -1,6 +1,5 @@
 import base64
 import tempfile
-import uuid
 from pathlib import Path
 from typing import Any
 
@@ -47,7 +46,7 @@ def detect_video_format(video: Any | dict) -> str | None:
 
 def dict_to_video_url_artifact(video_dict: dict, video_format: str | None = None) -> VideoUrlArtifact:
     """Convert a dictionary representation of video to a VideoUrlArtifact."""
-    from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
+    from griptape_nodes.files.project_file import ProjectFileDestination
 
     value = video_dict["value"]
 
@@ -70,11 +69,11 @@ def dict_to_video_url_artifact(video_dict: dict, video_format: str | None = None
         else:
             video_format = "mp4"
 
-    # Save to static file server
-    filename = f"{uuid.uuid4()}.{video_format}"
-    url = GriptapeNodes.StaticFilesManager().save_static_file(video_bytes, filename)
+    # Save to project file
+    dest = ProjectFileDestination(filename=f"video.{video_format}", situation="save_node_output")
+    saved = dest.write_bytes(video_bytes)
 
-    return VideoUrlArtifact(url)
+    return VideoUrlArtifact(saved.location)
 
 
 def frames_to_video_artifact(frames: list[Any], fps: int = 30, video_format: str = "mp4") -> VideoUrlArtifact:  # noqa: PLR0912
@@ -90,8 +89,9 @@ def frames_to_video_artifact(frames: list[Any], fps: int = 30, video_format: str
     """
     import cv2  # type: ignore[reportMissingImports]
     import numpy as np
-    from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
     from PIL import Image
+
+    from griptape_nodes.files.project_file import ProjectFileDestination
 
     if not frames:
         msg = "frames list cannot be empty"
@@ -145,13 +145,13 @@ def frames_to_video_artifact(frames: list[Any], fps: int = 30, video_format: str
         # Release the video writer
         out.release()
 
-        # Read the video file and save to static files
+        # Read the video file and save to project file
         video_bytes = Path(temp_video_path).read_bytes()
 
-        filename = f"{uuid.uuid4()}.{video_format}"
-        url = GriptapeNodes.StaticFilesManager().save_static_file(video_bytes, filename)
+        dest = ProjectFileDestination(filename=f"video.{video_format}", situation="save_node_output")
+        saved = dest.write_bytes(video_bytes)
 
-        return VideoUrlArtifact(url)
+        return VideoUrlArtifact(saved.location)
 
     finally:
         # Clean up temporary file

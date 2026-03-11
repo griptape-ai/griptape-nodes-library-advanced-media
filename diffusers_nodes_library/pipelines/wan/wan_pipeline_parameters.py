@@ -1,6 +1,5 @@
 import logging
 import tempfile
-import uuid
 from pathlib import Path
 from typing import Any
 
@@ -11,7 +10,7 @@ from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
 from griptape_nodes.exe_types.param_components.seed_parameter import SeedParameter
-from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
+from griptape_nodes.files.project_file import ProjectFileDestination
 
 logger = logging.getLogger("diffusers_nodes_library")
 
@@ -253,9 +252,9 @@ class WanPipelineParameters:
         preview_video_path = None
         try:
             preview_video_path = self.latents_to_video_mp4(pipe, latents)
-            filename = f"preview_{uuid.uuid4()}.mp4"
-            url = GriptapeNodes.StaticFilesManager().save_static_file(preview_video_path.read_bytes(), filename)
-            self._node.publish_update_to_parameter("output_video", VideoUrlArtifact(url))
+            dest = ProjectFileDestination(filename="preview_video.mp4", situation="save_node_output")
+            saved = dest.write_bytes(preview_video_path.read_bytes())
+            self._node.publish_update_to_parameter("output_video", VideoUrlArtifact(saved.location))
         except Exception as e:
             logger.warning("Failed to generate video preview from latents: %s", e)
         finally:
@@ -264,6 +263,6 @@ class WanPipelineParameters:
                 preview_video_path.unlink()
 
     def publish_output_video(self, video_path: Path) -> None:
-        filename = f"{uuid.uuid4()}{video_path.suffix}"
-        url = GriptapeNodes.StaticFilesManager().save_static_file(video_path.read_bytes(), filename)
-        self._node.parameter_output_values["output_video"] = VideoUrlArtifact(url)
+        dest = ProjectFileDestination(filename=f"output_video{video_path.suffix}", situation="save_node_output")
+        saved = dest.write_bytes(video_path.read_bytes())
+        self._node.parameter_output_values["output_video"] = VideoUrlArtifact(saved.location)
