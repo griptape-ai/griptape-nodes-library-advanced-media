@@ -12,6 +12,14 @@ from diffusers_nodes_library.common.parameters.diffusion.diffusion_pipeline_type
     DiffusionPipelineTypeParameters,
 )
 from diffusers_nodes_library.common.parameters.diffusion.flux.pipeline_type_parameters import FluxPipelineTypeDict
+from diffusers_nodes_library.common.parameters.diffusion.flux2.pipeline_type_parameters import Flux2PipelineTypeDict
+from diffusers_nodes_library.common.parameters.diffusion.glm_image.pipeline_type_parameters import (
+    GlmImagePipelineTypeDict,
+)
+from diffusers_nodes_library.common.parameters.diffusion.ltx2.pipeline_type_parameters import LTX2PipelineTypeDict
+from diffusers_nodes_library.common.parameters.diffusion.marigold.pipeline_type_parameters import (
+    MarigoldPipelineTypeDict,
+)
 from diffusers_nodes_library.common.parameters.diffusion.pipeline_type_parameters import (
     DiffusionPipelineTypePipelineParameters,
 )
@@ -22,6 +30,9 @@ from diffusers_nodes_library.common.parameters.diffusion.stable_diffusion.pipeli
 from diffusers_nodes_library.common.parameters.diffusion.wan.pipeline_type_parameters import WanPipelineTypeDict
 from diffusers_nodes_library.common.parameters.diffusion.wuerstchen.pipeline_type_parameters import (
     WuerstchenPipelineTypeDict,
+)
+from diffusers_nodes_library.common.parameters.diffusion.z_image.pipeline_type_parameters import (
+    ZImagePipelineTypeDict,
 )
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMessage, ParameterMode
 from griptape_nodes.traits.options import Options
@@ -34,11 +45,16 @@ AllPipelineTypes: dict[str, type[DiffusionPipelineTypePipelineParameters]] = {
     **AmusedPipelineTypeDict,
     **AudioldmPipelineTypeDict,
     **DepthCrafterPipelineTypeDict,
+    **Flux2PipelineTypeDict,
     **FluxPipelineTypeDict,
+    **GlmImagePipelineTypeDict,
+    **LTX2PipelineTypeDict,
+    **MarigoldPipelineTypeDict,
     **QwenPipelineTypeDict,
     **StableDiffusionPipelineTypeDict,
     **WanPipelineTypeDict,
     **WuerstchenPipelineTypeDict,
+    **ZImagePipelineTypeDict,
 }
 
 
