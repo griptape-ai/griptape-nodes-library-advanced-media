@@ -1,5 +1,6 @@
 import hashlib
 import logging
+from pathlib import Path
 from typing import Any
 
 import safetensors  # type: ignore[reportMissingImports]
@@ -29,7 +30,11 @@ class LorasParameter:
 
     def to_adapter_name(self, model_path: str) -> str:
         """Returns a unique name for an adapter given its model path."""
-        return hashlib.sha256(model_path.encode("utf-8")).hexdigest()
+        # Use resolve() here (not absolute()) so that symlinks and their targets
+        # hash to the same adapter name, preventing the same file from being
+        # loaded twice when referenced via different paths.
+        resolved = str(Path(model_path).resolve())
+        return hashlib.sha256(resolved.encode("utf-8")).hexdigest()
 
     def get_loras(self) -> dict[str, float]:
         loras_list = self._node.get_parameter_value(self._loras_parameter_name) or []

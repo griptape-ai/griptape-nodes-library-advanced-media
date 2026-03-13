@@ -41,7 +41,8 @@ class FilePathParameter:
         )
 
     def get_file_path(self) -> Path:
-        return Path(self._node.get_parameter_value(self._parameter_name)).resolve()
+        # Use absolute() rather than resolve() to preserve symlinks.
+        return Path(self._node.get_parameter_value(self._parameter_name)).absolute()
 
     def validate_parameter_values(self) -> None:
         file_path = self.get_file_path()
