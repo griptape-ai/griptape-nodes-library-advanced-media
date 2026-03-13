@@ -1,0 +1,92 @@
+[project]
+name = "griptape-nodes-library-advanced-media"
+version = "0.66.8"
+description = "Advanced media generation and manipulation nodes for Griptape Nodes."
+authors = [
+    {name = "Griptape, Inc."}
+]
+requires-python = "~=3.12"
+dependencies = [
+    "accelerate>=1.6.0",
+    "beautifulsoup4>=4.13.4",
+    "controlnet-aux>=0.0.9",
+    "static-ffmpeg>=2.8",
+    "diffusers @ https://github.com/huggingface/diffusers/archive/61f175660a8ac54f1470a74a810e6c38fb4795d5.zip",
+    "imageio[ffmpeg]>=2.37.2",
+    "ninja>=1.13.0",
+    "numpy>=2.2.4",
+    "opencv-python>=4.11.0.86",
+    "peft>=0.17.0",
+    "pillow>=11.2.1",
+    "sentencepiece>=0.2.0",
+    "cmake==3.31.6",
+    "spandrel>=0.4.1",
+    "torch==2.7.0",
+    "torchvision==0.22.0",
+    "torchaudio==2.7.0",
+    "transformers @ https://github.com/huggingface/transformers/archive/136c621c00b2536d1f608ed3c6de59b9897afbb8.zip",
+    "tqdm>=4.67.1",
+    "ultralytics>=8.0.0",
+    "optimum-quanto>=0.2.7",
+    "protobuf>=6.31.0",
+    "prodigyopt>=1.1.2; sys_platform == 'win32'",
+    "bitsandbytes>=0.46.0; sys_platform == 'win32'",
+    "ftfy>=6.3.1",
+    "sam2>=1.1.0",
+    "scipy>=1.10.0",
+    "matplotlib>=3.10.3",
+    "supervision>=0.27.0",
+    "griptape[drivers-prompt-amazon-bedrock,drivers-prompt-anthropic,drivers-prompt-cohere,drivers-prompt-ollama,drivers-web-scraper-trafilatura,drivers-web-search-duckduckgo,drivers-web-search-exa,loaders-image]>=1.8.12",
+    "griptape-nodes>=0.77.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "artifact_utils",
+    "controlnet_aux_nodes_library",
+    "diffusers_nodes_library",
+    "dino_sam2_library",
+    "opencv_nodes_library",
+    "openpose_nodes_library",
+    "pillow_nodes_library",
+    "spandrel_nodes_library",
+    "transformers_nodes_library",
+    "ultralytics_nodes_library",
+    "utils",
+    "workflows",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8.0",
+    "pytest",
+]
