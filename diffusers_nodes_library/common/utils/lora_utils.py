@@ -30,6 +30,9 @@ class LorasParameter:
 
     def to_adapter_name(self, model_path: str) -> str:
         """Returns a unique name for an adapter given its model path."""
+        # Use resolve() here (not absolute()) so that symlinks and their targets
+        # hash to the same adapter name, preventing the same file from being
+        # loaded twice when referenced via different paths.
         resolved = str(Path(model_path).resolve())
         return hashlib.sha256(resolved.encode("utf-8")).hexdigest()
 
