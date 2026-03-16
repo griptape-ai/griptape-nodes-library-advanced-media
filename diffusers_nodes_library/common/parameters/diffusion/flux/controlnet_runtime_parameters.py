@@ -2,19 +2,19 @@ import logging
 from typing import Any
 
 from griptape.artifacts import ImageUrlArtifact
+from griptape_nodes.exe_types.core_types import Parameter
+from griptape_nodes.exe_types.node_types import BaseNode
+from griptape_nodes.traits.options import Options
 from PIL.Image import Image
-from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
-    image_artifact_to_pil,
-)
-from utils.image_utils import load_image_from_url_artifact
 
 from diffusers_nodes_library.common.nodes.diffusion_pipeline_builder_node import UNION_PRO_2_CONFIG_HASH_POSTFIX
 from diffusers_nodes_library.common.parameters.diffusion.runtime_parameters import (
     DiffusionPipelineRuntimeParameters,
 )
-from griptape_nodes.exe_types.core_types import Parameter
-from griptape_nodes.exe_types.node_types import BaseNode
-from griptape_nodes.traits.options import Options
+from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
+    image_artifact_to_pil,
+)
+from utils.image_utils import load_image_from_url_artifact
 
 logger = logging.getLogger("diffusers_nodes_library")
 

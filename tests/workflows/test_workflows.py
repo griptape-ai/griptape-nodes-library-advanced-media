@@ -6,7 +6,6 @@ from typing import Any
 import pytest
 import pytest_asyncio
 from dotenv import load_dotenv
-
 from griptape_nodes.bootstrap.workflow_executors.local_workflow_executor import LocalWorkflowExecutor
 from griptape_nodes.retained_mode.events.object_events import ClearAllObjectStateRequest
 from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
@@ -25,9 +24,7 @@ def get_workflows() -> list[str]:
     """Get all workflow templates for this library."""
     workflows_dir = LIBRARY_ROOT / "workflows" / "templates"
     return [
-        str(f)
-        for f in workflows_dir.iterdir()
-        if f.is_file() and f.suffix == ".py" and not f.name.startswith("__")
+        str(f) for f in workflows_dir.iterdir() if f.is_file() and f.suffix == ".py" and not f.name.startswith("__")
     ]
 
 

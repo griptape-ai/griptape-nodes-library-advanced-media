@@ -3,6 +3,9 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, ClassVar
 
+from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
+from griptape_nodes.traits.options import Options
+
 from diffusers_nodes_library.common.parameters.diffusion.allegro.pipeline_type_parameters import (
     AllegroPipelineTypeParameters,
 )
@@ -48,8 +51,6 @@ from diffusers_nodes_library.common.parameters.diffusion.wuerstchen.pipeline_typ
 from diffusers_nodes_library.common.parameters.diffusion.z_image.pipeline_type_parameters import (
     ZImagePipelineTypeParameters,
 )
-from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
-from griptape_nodes.traits.options import Options
 
 if TYPE_CHECKING:
     from diffusers_nodes_library.common.nodes.diffusion_pipeline_builder_node import DiffusionPipelineBuilderNode

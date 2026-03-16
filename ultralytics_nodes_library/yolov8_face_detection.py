@@ -4,16 +4,16 @@ from dataclasses import dataclass
 from typing import Any
 
 import PIL.Image
-from diffusers_nodes_library.common.utils.huggingface_utils import model_cache
 from griptape.artifacts import ImageUrlArtifact
-from supervision import Detections  # type: ignore[import-untyped]
-from utils.image_utils import load_image_from_url_artifact
-
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import AsyncResult, ControlNode, NodeResolutionState
+from supervision import Detections  # type: ignore[import-untyped]
+
+from diffusers_nodes_library.common.utils.huggingface_utils import model_cache
 from ultralytics_nodes_library.yolov8_face_detection_parameters import (
     YOLOv8FaceDetectionParameters,
 )
+from utils.image_utils import load_image_from_url_artifact
 
 logger = logging.getLogger("ultralytics_nodes_library")
 

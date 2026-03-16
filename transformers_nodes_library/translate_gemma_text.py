@@ -5,6 +5,7 @@ from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import AsyncResult, ControlNode
 from griptape_nodes.exe_types.param_types.parameter_string import ParameterString
 from griptape_nodes.traits.options import Options
+
 from transformers_nodes_library.translate_gemma_parameters import (
     CUSTOM_LANG_OPTION,
     DEFAULT_SOURCE_LANG,

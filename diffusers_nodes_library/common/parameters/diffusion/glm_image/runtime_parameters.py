@@ -4,18 +4,17 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from griptape_nodes.exe_types.node_types import BaseNode
     from PIL import Image
 
-    from griptape_nodes.exe_types.node_types import BaseNode
-
 from griptape.artifacts import ImageUrlArtifact
-from pillow_nodes_library.utils import image_artifact_to_pil  # type: ignore[reportMissingImports]
-from utils.image_utils import load_image_from_url_artifact
+from griptape_nodes.exe_types.core_types import Parameter
 
 from diffusers_nodes_library.common.parameters.diffusion.runtime_parameters import (
     DiffusionPipelineRuntimeParameters,
 )
-from griptape_nodes.exe_types.core_types import Parameter
+from pillow_nodes_library.utils import image_artifact_to_pil  # type: ignore[reportMissingImports]
+from utils.image_utils import load_image_from_url_artifact
 
 logger = logging.getLogger("diffusers_nodes_library")
 

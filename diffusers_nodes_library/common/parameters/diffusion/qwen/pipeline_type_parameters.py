@@ -9,11 +9,11 @@ from diffusers_nodes_library.common.parameters.diffusion.pipeline_type_parameter
 from diffusers_nodes_library.common.parameters.diffusion.qwen.controlnet_parameters import (
     QwenImageControlNetPipelineParameters,
 )
-from diffusers_nodes_library.common.parameters.diffusion.qwen.edit_parameters import (
-    QwenEditPipelineParameters,
-)
 from diffusers_nodes_library.common.parameters.diffusion.qwen.edit_inpaint_parameters import (
     QwenImageEditInpaintPipelineParameters,
+)
+from diffusers_nodes_library.common.parameters.diffusion.qwen.edit_parameters import (
+    QwenEditPipelineParameters,
 )
 from diffusers_nodes_library.common.parameters.diffusion.qwen.edit_plus_parameters import (
     QwenImageEditPlusPipelineParameters,

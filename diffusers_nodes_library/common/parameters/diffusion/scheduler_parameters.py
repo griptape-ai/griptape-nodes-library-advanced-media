@@ -2,7 +2,6 @@ import json
 import logging
 
 import diffusers  # type: ignore[reportMissingImports]
-
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.traits.options import Options

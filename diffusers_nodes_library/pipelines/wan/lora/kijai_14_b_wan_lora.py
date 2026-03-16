@@ -1,10 +1,11 @@
 import logging
 from typing import override
 
+from griptape_nodes.exe_types.core_types import ParameterMessage
+
 from diffusers_nodes_library.pipelines.wan.lora.huggingface_wan_lora import (
     HuggingFaceWanLora,  # type: ignore[reportMissingImports]
 )
-from griptape_nodes.exe_types.core_types import ParameterMessage
 
 logger = logging.getLogger("diffusers_nodes_library")
 

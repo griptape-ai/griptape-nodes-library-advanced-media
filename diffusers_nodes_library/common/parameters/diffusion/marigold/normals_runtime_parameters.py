@@ -6,22 +6,21 @@ from typing import TYPE_CHECKING, Any
 import PIL.Image
 import torch  # type: ignore[reportMissingImports]
 from griptape.artifacts import ImageUrlArtifact
+from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
+
+from diffusers_nodes_library.common.parameters.diffusion.runtime_parameters import (
+    DiffusionPipelineRuntimeParameters,
+)
 from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
     image_artifact_to_pil,
     pil_to_image_artifact,
 )
 from utils.image_utils import load_image_from_url_artifact
 
-from diffusers_nodes_library.common.parameters.diffusion.runtime_parameters import (
-    DiffusionPipelineRuntimeParameters,
-)
-from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
-
 if TYPE_CHECKING:
     from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
-    from PIL.Image import Image
-
     from griptape_nodes.exe_types.node_types import BaseNode
+    from PIL.Image import Image
 
 logger = logging.getLogger("diffusers_nodes_library")
 

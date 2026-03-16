@@ -1,7 +1,8 @@
+from griptape_nodes.exe_types.node_types import BaseNode
+
 from diffusers_nodes_library.common.parameters.diffusion.common.upscale_runtime_parameters import (
     UpscalePipelineRuntimeParameters,
 )
-from griptape_nodes.exe_types.node_types import BaseNode
 
 
 class FluxUpscalePipelineRuntimeParameters(UpscalePipelineRuntimeParameters):

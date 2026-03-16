@@ -1,7 +1,8 @@
+from griptape_nodes.exe_types.node_types import BaseNode
+
 from diffusers_nodes_library.common.parameters.diffusion.qwen.img2img_parameters import (
     QwenImg2ImgPipelineParameters,
 )
-from griptape_nodes.exe_types.node_types import BaseNode
 
 
 class QwenUpscalePipelineParameters(QwenImg2ImgPipelineParameters):

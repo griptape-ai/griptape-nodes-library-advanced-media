@@ -2,15 +2,15 @@ import logging
 from typing import Any
 
 import torch  # type: ignore[reportMissingImports]
-from artifact_utils.audio_utils import dict_to_audio_url_artifact  # type: ignore[reportMissingImports]
 from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
+from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
+from griptape_nodes.exe_types.node_types import BaseNode
 
+from artifact_utils.audio_utils import dict_to_audio_url_artifact  # type: ignore[reportMissingImports]
 from diffusers_nodes_library.common.parameters.diffusion.runtime_parameters import (
     DEFAULT_NUM_INFERENCE_STEPS,
     DiffusionPipelineRuntimeParameters,
 )
-from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
-from griptape_nodes.exe_types.node_types import BaseNode
 
 logger = logging.getLogger("diffusers_nodes_library")
 

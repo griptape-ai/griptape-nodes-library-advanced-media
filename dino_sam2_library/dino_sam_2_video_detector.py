@@ -8,18 +8,18 @@ import numpy as np
 import PIL.Image  # type: ignore[reportMissingImports]
 import torch  # type: ignore[reportMissingImports]
 import transformers  # type: ignore[reportMissingImports]
-from diffusers_nodes_library.common.utils.huggingface_utils import model_cache  # type: ignore[reportMissingImports]
-from diffusers_nodes_library.common.utils.torch_utils import get_best_device  # type: ignore[reportMissingImports]
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
-from huggingface_hub import hf_hub_download  # pyright: ignore[reportMissingImports]
-from sam2.build_sam import HF_MODEL_ID_TO_FILENAMES, build_sam2_video_predictor  # type: ignore[reportMissingImports]
-
-from dino_sam2_library.dino_sam_2_detector_parameters import DinoSam2DetectorParameters
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import AsyncResult, ControlNode
 from griptape_nodes.exe_types.param_components.log_parameter import LogParameter
 from griptape_nodes.files.file import File
 from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
+from huggingface_hub import hf_hub_download  # pyright: ignore[reportMissingImports]
+from sam2.build_sam import HF_MODEL_ID_TO_FILENAMES, build_sam2_video_predictor  # type: ignore[reportMissingImports]
+
+from diffusers_nodes_library.common.utils.huggingface_utils import model_cache  # type: ignore[reportMissingImports]
+from diffusers_nodes_library.common.utils.torch_utils import get_best_device  # type: ignore[reportMissingImports]
+from dino_sam2_library.dino_sam_2_detector_parameters import DinoSam2DetectorParameters
 
 logger = logging.getLogger("sam2_nodes_library")
 

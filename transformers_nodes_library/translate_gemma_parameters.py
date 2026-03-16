@@ -2,11 +2,10 @@ import logging
 from typing import Any
 
 import torch  # type: ignore[reportMissingImports]
-from transformers import pipeline  # type: ignore[reportMissingImports]
-
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
 from griptape_nodes.exe_types.param_components.log_parameter import LogParameter
+from transformers import pipeline  # type: ignore[reportMissingImports]
 
 logger = logging.getLogger("transformers_nodes_library")
 

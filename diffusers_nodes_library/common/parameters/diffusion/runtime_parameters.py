@@ -7,13 +7,13 @@ from typing import Any
 import PIL.Image
 import torch  # type: ignore[reportMissingImports]
 from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
-from PIL.Image import Image
-from pillow_nodes_library.utils import pil_to_image_artifact  # type: ignore[reportMissingImports]
-from utils.directory_utils import check_cleanup_intermediates_directory, get_intermediates_directory_path
-
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.seed_parameter import SeedParameter
+from PIL.Image import Image
+
+from pillow_nodes_library.utils import pil_to_image_artifact  # type: ignore[reportMissingImports]
+from utils.directory_utils import check_cleanup_intermediates_directory, get_intermediates_directory_path
 
 logger = logging.getLogger("diffusers_nodes_library")
 

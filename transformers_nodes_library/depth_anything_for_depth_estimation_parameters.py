@@ -2,12 +2,12 @@ import logging
 
 import PIL.Image
 import torch  # type: ignore[reportMissingImports]
-from diffusers_nodes_library.common.utils.huggingface_utils import model_cache  # type: ignore[reportMissingImports]
-from transformers import AutoImageProcessor, AutoModelForDepthEstimation  # type: ignore[reportMissingImports]
-
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
 from griptape_nodes.exe_types.param_components.log_parameter import LogParameter
+from transformers import AutoImageProcessor, AutoModelForDepthEstimation  # type: ignore[reportMissingImports]
+
+from diffusers_nodes_library.common.utils.huggingface_utils import model_cache  # type: ignore[reportMissingImports]
 
 logger = logging.getLogger("diffusers_nodes_library")
 

@@ -2,13 +2,12 @@ import logging
 from collections.abc import Callable
 
 import huggingface_hub
-from ultralytics import YOLO  # type: ignore[import-untyped]
-
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
 from griptape_nodes.exe_types.param_components.log_parameter import LogParameter
 from griptape_nodes.traits.slider import Slider
+from ultralytics import YOLO  # type: ignore[import-untyped]
 
 logger = logging.getLogger("ultralytics_nodes_library")
 

@@ -1,13 +1,13 @@
 from typing import Any
 
 from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
+from griptape_nodes.exe_types.node_types import BaseNode
 from PIL.Image import Image
 
 from diffusers_nodes_library.common.parameters.diffusion.common.upscale_runtime_parameters import (
     UpscalePipelineRuntimeParameters,
 )
 from diffusers_nodes_library.common.parameters.diffusion.qwen.common import qwen_latents_to_image_pil
-from griptape_nodes.exe_types.node_types import BaseNode
 
 
 class QwenUpscalePipelineRuntimeParameters(UpscalePipelineRuntimeParameters):

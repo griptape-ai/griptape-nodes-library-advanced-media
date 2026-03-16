@@ -5,7 +5,7 @@ description = "Advanced media generation and manipulation nodes for Griptape Nod
 authors = [
     {name = "Griptape, Inc."}
 ]
-requires-python = "~=3.12"
+requires-python = "~=3.12.0"
 dependencies = [
     "accelerate>=1.6.0",
     "beautifulsoup4>=4.13.4",
@@ -43,6 +43,9 @@ dependencies = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = [
@@ -86,7 +89,24 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [dependency-groups]
-dev = [
-    "ruff>=0.8.0",
-    "pytest",
-]
+dev = ["pyright>=1.1.396", "pytest-asyncio>=0.21.0", "ruff>=0.8.0", "pytest"]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+include = ["."]
+exclude = [".venv", "**/node_modules", "**/__pycache__", "**/.*", "templates"]
+pythonVersion = "3.12"
+reportIncompatibleMethodOverride = false
+reportMissingImports = false
+reportMissingModuleSource = false
+reportAttributeAccessIssue = false
+reportPrivateImportUsage = false
+reportCallIssue = false
+reportArgumentType = false
+reportOptionalSubscript = false
+reportReturnType = false
+reportOptionalCall = false
+reportGeneralTypeIssues = false
+reportIndexIssue = false
+reportAssignmentType = false

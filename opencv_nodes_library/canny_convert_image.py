@@ -5,12 +5,12 @@ import cv2  # type: ignore[reportMissingImports]
 import numpy as np
 import PIL.Image
 from griptape.artifacts import ImageUrlArtifact
-from pillow_nodes_library.utils import image_artifact_to_pil, pil_to_image_artifact
-from utils.image_utils import load_image_from_url_artifact
-
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import AsyncResult, ControlNode
 from griptape_nodes.retained_mode.retained_mode import RetainedMode as cmd  # noqa:  N813
+
+from pillow_nodes_library.utils import image_artifact_to_pil, pil_to_image_artifact
+from utils.image_utils import load_image_from_url_artifact
 
 logger = logging.getLogger("opencv_nodes_library")
 
