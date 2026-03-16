@@ -8,7 +8,7 @@
 # node_libraries_referenced = [["Griptape Nodes Library", "0.52.3"], ["Griptape Nodes Advanced Media Library", "0.63.0"]]
 # node_types_used = [["Griptape Nodes Advanced Media Library", "DiffusionPipelineBuilderNode"], ["Griptape Nodes Advanced Media Library", "DiffusionPipelineRuntimeNode"], ["Griptape Nodes Advanced Media Library", "LoadLora"], ["Griptape Nodes Library", "CreateTextList"], ["Griptape Nodes Library", "DisplayImageGrid"], ["Griptape Nodes Library", "ForEachEndNode"], ["Griptape Nodes Library", "ForEachStartNode"], ["Griptape Nodes Library", "LoadImage"], ["Griptape Nodes Library", "Note"], ["Griptape Nodes Library", "TextInput"]]
 # description = "Control camera angles and perspective with Qwen-Image-Edit-2509"
-# image = "https://raw.githubusercontent.com/griptape-ai/griptape-nodes/refs/heads/main/libraries/griptape_nodes_advanced_media_library/workflows/templates/thumbnail_qwen.webp"
+# image = "https://raw.githubusercontent.com/griptape-ai/griptape-nodes-library-advanced-media/main/workflows/templates/thumbnail_qwen.webp"
 # is_griptape_provided = true
 # is_template = true
 # creation_date = 2025-11-19T11:55:49.964965Z
