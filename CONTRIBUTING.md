@@ -1,119 +1,111 @@
-# Contributing to Griptape Nodes Advanced Media Library
-
-We welcome contributions to the Griptape Nodes Advanced Media Library! This library provides nodes for advanced machine learning and computer vision tasks, organized by underlying framework.
-
-## Development Location
-
-**IMPORTANT**: For now, all development for this library happens in the main [griptape-nodes](https://github.com/griptape-ai/griptape-nodes) repository under the `libraries/griptape_nodes_advanced_media_library/` directory.
-
-This library is automatically synced to the public [griptape-nodes-library-advanced-media](https://github.com/griptape-ai/griptape-nodes-library-advanced-media) repository when changes are pushed to the `main` branch.
+# Contributing
 
 ## Development Setup
 
-Please refer to the [main CONTRIBUTING.md](https://github.com/griptape-ai/griptape-nodes/blob/main/CONTRIBUTING.md) in the griptape-nodes repository for:
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management. Install dev dependencies with:
 
-- Installing `uv` and setting up your development environment
-- Installing dependencies with `uv sync --all-groups --all-extras`
-- Code style guidelines (Ruff, Pyright)
-- Running checks with `make check` and `make fix`
-- General contribution workflow
+```bash
+make install/dev
+```
 
-## Contributing Code
+To install all dependencies including core and extras:
 
-1. **Find the library code** - All nodes for this library are located in:
+```bash
+make install
+```
 
-    ```
-    libraries/griptape_nodes_advanced_media_library/
-    ```
+## Makefile Targets
 
-    Nodes are organized by framework/technology:
+Run `make` with no arguments to see all available targets.
 
-    - `controlnet_aux/` - ControlNet auxiliary models
-    - `diffusers/` - [Diffusers](https://github.com/huggingface/diffusers) package nodes
-    - `dino_sam2/` - DINO and SAM2 segmentation models
-    - `opencv/` - OpenCV computer vision nodes
-    - `openpose/` - OpenPose pose estimation
-    - `pillow/` - Pillow image processing
-    - `spandrel/` - Spandrel super-resolution
-    - `transformers/` - Hugging Face Transformers models
-    - `ultralytics/` - YOLO object detection models
-    - `artifact_utils/` - Shared utilities for artifacts
-    - `utils/` - General utility functions
+### Checks
 
-1. **Make your changes** - Follow the existing code structure and style in the library.
+Run all checks (format, lint, types) before submitting a PR:
 
-1. **Run tests** - Test the library to ensure your changes work:
+```bash
+make check
+```
 
-    ```shell
-    # From the repository root
-    uv run pytest libraries/griptape_nodes_advanced_media_library/tests/
-    ```
+Individual checks:
 
-1. **Follow code quality standards** - Run checks before submitting:
+```bash
+make check/format   # ruff format --check
+make check/lint     # ruff check
+make check/types    # pyright
+```
 
-    ```shell
-    make check  # Check linting, formatting, and type errors
-    make fix    # Auto-fix issues where possible
-    ```
+### Fixing Issues
 
-1. **Submit a pull request** - Open a PR against the `main` branch of the [griptape-nodes](https://github.com/griptape-ai/griptape-nodes) repository.
+Auto-fix formatting and linting issues:
 
-## Syncing to Public Repository
+```bash
+make fix
+```
 
-When changes are merged to the `main` branch in the griptape-nodes repository, they automatically sync to the public [griptape-nodes-library-advanced-media](https://github.com/griptape-ai/griptape-nodes-library-advanced-media) repository via GitHub Actions.
+### Dependency Sync
 
-You don't need to do anything special for this sync to happen - it's automatic.
+The `pip_dependencies` field in the library JSON is kept in sync with `pyproject.toml`. Run this after adding or removing dependencies:
 
-## Making a Release (Maintainers)
+```bash
+make deps/sync
+```
 
-Releases involve two steps: updating the version in the main repository, then publishing from the synced library repository.
+This is also run automatically as part of `make install/core` and `make install/all`.
 
-### Step 1: Update Version (in main griptape-nodes repo)
+## CI
 
-1. Navigate to the library directory:
+The CI workflow runs `make check` on every pull request and push to `main`. PRs must pass all checks before merging.
 
-    ```shell
-    cd libraries/griptape_nodes_advanced_media_library
-    ```
+## Releases
 
-1. Edit `griptape_nodes_library.json` and update the version in the metadata section:
+Library versions follow [semantic versioning](https://semver.org/). The version is stored in the library JSON file under `metadata.library_version`.
 
-    ```json
-    {
-      "metadata": {
-        "library_version": "0.63.1"
-      }
-    }
-    ```
+To check the current version:
 
-1. Commit and push:
+```bash
+make version/get
+```
 
-    ```shell
-    git add griptape_nodes_library.json
-    git commit -m "chore: bump griptape_nodes_advanced_media_library to v0.63.1"
-    git push origin main
-    ```
+To set a specific version:
 
-    This automatically syncs the changes to the public library repository.
+```bash
+make version/set v=1.2.3
+```
 
-### Step 2: Publish Release (in public library repo)
+### Regular Release
 
-After the sync completes:
+1. Merge your changes to `main`.
 
-1. Go to the [griptape-nodes-library-advanced-media](https://github.com/griptape-ai/griptape-nodes-library-advanced-media) repository on GitHub
-1. Navigate to Actions → "Publish Version"
-1. Run the workflow manually to:
-    - Create version tag (e.g., `v0.63.1`)
-    - Update `stable` tag
-    - Create GitHub release with auto-generated notes
+2. Run **Actions > Version Bump (Patch)** or **Actions > Version Bump (Minor)** on `main`. This increments the version in the library JSON and commits the change.
 
-The library also has automated workflows:
+   Or bump locally and push:
 
-- `version-bump-patch.yml` / `version-bump-minor.yml` - Can bump versions (but currently versions are managed in main repo)
-- `nightly-release.yml` - Creates nightly prerelease builds automatically
+   ```bash
+   make version/patch   # 1.2.3 → 1.2.4
+   make version/minor   # 1.2.3 → 1.3.0
+   make version/major   # 1.2.3 → 2.0.0
+   ```
 
-## Questions or Issues?
+3. Run **Actions > Version Publish** on `main`. This creates and pushes the version tag (e.g. `v1.2.3`), updates the `stable` tag, and creates a GitHub release with auto-generated release notes.
 
-For questions about contributing, please open an issue in the [griptape-nodes](https://github.com/griptape-ai/griptape-nodes) repository.
+### Patch Release
 
-Thank you for contributing!
+To release a fix without including all commits on `main`, use a release branch:
+
+1. Create a branch from the tag you want to patch:
+
+   ```bash
+   git checkout -b release/v0.50 v0.50.0
+   git push -u origin release/v0.50
+   ```
+
+2. Cherry-pick the fix commit(s) you want to include:
+
+   ```bash
+   git cherry-pick <commit-sha>
+   git push
+   ```
+
+3. Run **Actions > Version Bump (Patch)** and set the branch to `release/v0.50`.
+
+4. Run **Actions > Version Publish** and set the branch to `release/v0.50`.

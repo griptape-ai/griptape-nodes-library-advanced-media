@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Any
 
 import safetensors  # type: ignore[reportMissingImports]
-
 from griptape_nodes.exe_types.core_types import ParameterList, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
 

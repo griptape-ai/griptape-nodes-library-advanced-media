@@ -90,9 +90,8 @@ def frames_to_video_artifact(frames: list[Any], fps: int = 30, video_format: str
     """
     import cv2  # type: ignore[reportMissingImports]
     import numpy as np
-    from PIL import Image
-
     from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
+    from PIL import Image
 
     if not frames:
         msg = "frames list cannot be empty"

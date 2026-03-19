@@ -1,5 +1,8 @@
 import logging
 
+from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
+from griptape_nodes.exe_types.node_types import ControlNode
+
 from diffusers_nodes_library.common.parameters.file_path_parameter import FilePathParameter
 from diffusers_nodes_library.pipelines.wan.lora.wan_lora_parameters import (  # type: ignore[reportMissingImports]
     WanLoraParameters,  # type: ignore[reportMissingImports],  # type: ignore[reportMissingImports]
@@ -7,8 +10,6 @@ from diffusers_nodes_library.pipelines.wan.lora.wan_lora_parameters import (  # 
 from diffusers_nodes_library.pipelines.wan.wan_pipeline_parameters import (
     WanPipelineParameters,  # type: ignore[reportMissingImports]
 )
-from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
-from griptape_nodes.exe_types.node_types import ControlNode
 
 logger = logging.getLogger("diffusers_nodes_library")
 

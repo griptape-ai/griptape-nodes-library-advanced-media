@@ -1,6 +1,8 @@
 import logging
 
 import torch  # type: ignore[reportMissingImports]
+from griptape_nodes.exe_types.node_types import BaseNode
+from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
 
 from diffusers_nodes_library.common.parameters.diffusion.depthcrafter.depthcrafter_pipeline import (
     DepthCrafterVideoDiffusionPipeline,
@@ -11,8 +13,6 @@ from diffusers_nodes_library.common.parameters.diffusion.depthcrafter.unet impor
 from diffusers_nodes_library.common.parameters.diffusion.pipeline_type_parameters import (
     DiffusionPipelineTypePipelineParameters,
 )
-from griptape_nodes.exe_types.node_types import BaseNode
-from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
 
 logger = logging.getLogger("diffusers_nodes_library")
 

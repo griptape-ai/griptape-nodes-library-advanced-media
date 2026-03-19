@@ -1,17 +1,17 @@
 import logging
 
 from griptape.artifacts import ImageUrlArtifact
+from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
+from griptape_nodes.exe_types.node_types import AsyncResult, ControlNode
+
 from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
     image_artifact_to_pil,  # type: ignore[reportMissingImports]
     pil_to_image_artifact,  # type: ignore[reportMissingImports]
 )
-from utils.image_utils import load_image_from_url_artifact
-
-from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
-from griptape_nodes.exe_types.node_types import AsyncResult, ControlNode
 from transformers_nodes_library.depth_anything_for_depth_estimation_parameters import (
     DepthAnythingForDepthEstimationParameters,
 )
+from utils.image_utils import load_image_from_url_artifact
 
 logger = logging.getLogger("diffusers_nodes_library")
 

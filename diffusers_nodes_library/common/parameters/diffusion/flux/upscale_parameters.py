@@ -1,7 +1,8 @@
+from griptape_nodes.exe_types.node_types import BaseNode
+
 from diffusers_nodes_library.common.parameters.diffusion.flux.img2img_parameters import (
     FluxImg2ImgPipelineParameters,
 )
-from griptape_nodes.exe_types.node_types import BaseNode
 
 
 class FluxUpscalePipelineParameters(FluxImg2ImgPipelineParameters):

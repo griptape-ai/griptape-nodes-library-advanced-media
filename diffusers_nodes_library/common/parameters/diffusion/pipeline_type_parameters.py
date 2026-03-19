@@ -2,7 +2,6 @@ import logging
 from abc import ABC, abstractmethod
 
 import diffusers  # type: ignore[reportMissingImports]
-
 from griptape_nodes.exe_types.node_types import BaseNode
 
 logger = logging.getLogger("diffusers_nodes_library")

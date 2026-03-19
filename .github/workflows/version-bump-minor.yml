@@ -20,32 +20,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Get current version
-        id: current_version
-        run: |
-          VERSION=$(jq -r '.metadata.library_version' griptape_nodes_library.json)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Current version: $VERSION"
-
       - name: Bump minor version
-        id: new_version
-        run: |
-          CURRENT="${{ steps.current_version.outputs.version }}"
-          IFS='.' read -r major minor patch <<< "$CURRENT"
-          NEW_MINOR=$((minor + 1))
-          NEW_VERSION="${major}.${NEW_MINOR}.0"
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "New version: $NEW_VERSION"
+        run: make version/minor
 
-      - name: Update version in JSON
-        run: |
-          jq --arg version "${{ steps.new_version.outputs.version }}" \
-            '.metadata.library_version = $version' \
-            griptape_nodes_library.json > griptape_nodes_library.json.tmp
-          mv griptape_nodes_library.json.tmp griptape_nodes_library.json
-
-      - name: Commit and push
-        run: |
-          git add griptape_nodes_library.json
-          git commit -m "chore: bump v${{ steps.new_version.outputs.version }}"
-          git push
+      - name: Push changes
+        run: git push

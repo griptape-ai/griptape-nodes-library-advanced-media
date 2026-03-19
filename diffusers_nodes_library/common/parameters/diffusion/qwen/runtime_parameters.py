@@ -2,14 +2,14 @@ import logging
 from typing import Any
 
 from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
+from griptape_nodes.exe_types.core_types import Parameter
+from griptape_nodes.exe_types.node_types import BaseNode
 from PIL.Image import Image
 
 from diffusers_nodes_library.common.parameters.diffusion.qwen.common import qwen_latents_to_image_pil
 from diffusers_nodes_library.common.parameters.diffusion.runtime_parameters import (
     DiffusionPipelineRuntimeParameters,
 )
-from griptape_nodes.exe_types.core_types import Parameter
-from griptape_nodes.exe_types.node_types import BaseNode
 
 logger = logging.getLogger("diffusers_nodes_library")
 
