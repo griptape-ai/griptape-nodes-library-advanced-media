@@ -70,7 +70,7 @@ def dict_to_video_url_artifact(video_dict: dict, video_format: str | None = None
             video_format = "mp4"
 
     # Save to project file
-    dest = ProjectFileDestination(filename=f"video.{video_format}", situation="save_node_output")
+    dest = ProjectFileDestination.from_situation(filename=f"video.{video_format}", situation="save_node_output")
     saved = dest.write_bytes(video_bytes)
 
     return VideoUrlArtifact(saved.location)
@@ -147,7 +147,7 @@ def frames_to_video_artifact(frames: list[Any], fps: int = 30, video_format: str
         # Read the video file and save to project file
         video_bytes = Path(temp_video_path).read_bytes()
 
-        dest = ProjectFileDestination(filename=f"video.{video_format}", situation="save_node_output")
+        dest = ProjectFileDestination.from_situation(filename=f"video.{video_format}", situation="save_node_output")
         saved = dest.write_bytes(video_bytes)
 
         return VideoUrlArtifact(saved.location)

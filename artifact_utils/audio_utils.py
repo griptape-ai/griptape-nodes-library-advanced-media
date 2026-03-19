@@ -29,7 +29,7 @@ def dict_to_audio_url_artifact(audio_dict: dict, audio_format: str | None = None
             audio_format = "mp3"
 
     # Save to project file
-    dest = ProjectFileDestination(filename=f"audio.{audio_format}", situation="save_node_output")
+    dest = ProjectFileDestination.from_situation(filename=f"audio.{audio_format}", situation="save_node_output")
     saved = dest.write_bytes(audio_bytes)
 
     return AudioUrlArtifact(saved.location)

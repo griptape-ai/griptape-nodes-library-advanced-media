@@ -37,7 +37,7 @@ dependencies = [
     "matplotlib>=3.10.3",
     "supervision>=0.27.0",
     "griptape[drivers-prompt-amazon-bedrock,drivers-prompt-anthropic,drivers-prompt-cohere,drivers-prompt-ollama,drivers-web-scraper-trafilatura,drivers-web-search-duckduckgo,drivers-web-search-exa,loaders-image]>=1.9.4",
-    "griptape-nodes>=0.77.0",
+    "griptape-nodes>=0.77.5",
 ]
 
 [build-system]

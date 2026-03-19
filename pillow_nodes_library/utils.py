@@ -36,10 +36,12 @@ def pil_to_image_artifact(pil_image: Image, directory_path: str = "") -> ImageUr
             max_size_gb = GriptapeNodes.ConfigManager().get_config_value("advanced_media_library.max_directory_size_gb")
             GriptapeNodes.OSManager().cleanup_directory_if_needed(full_directory_path=path, max_size_gb=max_size_gb)
 
-        dest = ProjectFileDestination(filename=f"{directory_path}/image.png", situation="save_node_output")
+        dest = ProjectFileDestination.from_situation(
+            filename=f"{directory_path}/image.png", situation="save_node_output"
+        )
     else:
         # No directory prefix - direct storage
-        dest = ProjectFileDestination(filename="image.png", situation="save_node_output")
+        dest = ProjectFileDestination.from_situation(filename="image.png", situation="save_node_output")
 
     saved = dest.write_bytes(image_bytes)
     return ImageUrlArtifact(saved.location)
