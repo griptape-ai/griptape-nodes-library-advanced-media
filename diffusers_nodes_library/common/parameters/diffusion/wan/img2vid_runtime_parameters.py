@@ -244,6 +244,8 @@ class WanImageToVideoPipelineRuntimeParameters(DiffusionPipelineRuntimeParameter
                 preview_video_path.unlink()
 
     def publish_output_video(self, video_path: Path) -> None:
-        dest = ProjectFileDestination.from_situation(filename=f"output_video{video_path.suffix}", situation="save_node_output")
+        dest = ProjectFileDestination.from_situation(
+            filename=f"output_video{video_path.suffix}", situation="save_node_output"
+        )
         saved = dest.write_bytes(video_path.read_bytes())
         self._node.parameter_output_values["output_video"] = VideoUrlArtifact(saved.location)

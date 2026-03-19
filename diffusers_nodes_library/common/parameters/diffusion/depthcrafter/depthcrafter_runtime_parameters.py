@@ -317,7 +317,9 @@ class DepthCrafterPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
         self._node.log_params.append_to_logs("Done.\n")  # type: ignore[reportAttributeAccessIssue]
 
     def publish_output_video(self, video_path: Path) -> None:
-        dest = ProjectFileDestination.from_situation(filename=f"output_video{video_path.suffix}", situation="save_node_output")
+        dest = ProjectFileDestination.from_situation(
+            filename=f"output_video{video_path.suffix}", situation="save_node_output"
+        )
         saved = dest.write_bytes(video_path.read_bytes())
         video_artifact = VideoUrlArtifact(saved.location)
         self._node.publish_update_to_parameter("output_video", video_artifact)
