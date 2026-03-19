@@ -16,6 +16,8 @@ from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
 )
 from utils.image_utils import load_image_from_url_artifact
 
+from griptape_nodes.files.file import File
+
 logger = logging.getLogger("diffusers_nodes_library")
 
 
@@ -87,7 +89,7 @@ class StaticMaskWanVaceAux(ControlNode):
         mask_image = self.get_parameter_value("mask_image")
 
         # Load video frames
-        video_frames = diffusers.utils.load_video(input_video.value)
+        video_frames = diffusers.utils.load_video(File(input_video.value).resolve())
 
         if not video_frames:
             msg = "Could not load frames from input video"
