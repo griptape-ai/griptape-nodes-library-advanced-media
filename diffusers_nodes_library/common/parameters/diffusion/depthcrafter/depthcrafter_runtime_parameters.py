@@ -1,7 +1,6 @@
 import logging
 import math
 import tempfile
-import uuid
 from pathlib import Path
 
 import diffusers  # type: ignore[reportMissingImports]
@@ -11,7 +10,7 @@ import torch  # type: ignore[reportMissingImports]
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
-from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
+from griptape_nodes.files.project_file import ProjectFileDestination
 from PIL import Image
 
 from diffusers_nodes_library.common.parameters.diffusion.runtime_parameters import (
@@ -136,9 +135,9 @@ class DepthCrafterPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
             black_frame = PIL.Image.new("RGB", (320, 240), color="black")
             frames = [black_frame]
             diffusers.utils.export_to_video(frames, str(temp_path), fps=1)
-            filename = f"placeholder_{uuid.uuid4()}.mp4"
-            url = GriptapeNodes.StaticFilesManager().save_static_file(temp_path.read_bytes(), filename)
-            self._node.publish_update_to_parameter("output_video", VideoUrlArtifact(url))
+            dest = ProjectFileDestination(filename="placeholder_video.mp4", situation="save_node_output")
+            saved = dest.write_bytes(temp_path.read_bytes())
+            self._node.publish_update_to_parameter("output_video", VideoUrlArtifact(saved.location))
         finally:
             if temp_path.exists():
                 temp_path.unlink()
@@ -318,9 +317,9 @@ class DepthCrafterPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
         self._node.log_params.append_to_logs("Done.\n")  # type: ignore[reportAttributeAccessIssue]
 
     def publish_output_video(self, video_path: Path) -> None:
-        filename = f"{uuid.uuid4()}{video_path.suffix}"
-        url = GriptapeNodes.StaticFilesManager().save_static_file(video_path.read_bytes(), filename)
-        video_artifact = VideoUrlArtifact(url)
+        dest = ProjectFileDestination(filename=f"output_video{video_path.suffix}", situation="save_node_output")
+        saved = dest.write_bytes(video_path.read_bytes())
+        video_artifact = VideoUrlArtifact(saved.location)
         self._node.publish_update_to_parameter("output_video", video_artifact)
         self._node.set_parameter_value("output_video", video_artifact)
         self._node.parameter_output_values["output_video"] = video_artifact

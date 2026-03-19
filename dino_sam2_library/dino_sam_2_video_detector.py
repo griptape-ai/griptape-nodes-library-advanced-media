@@ -12,8 +12,8 @@ from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import AsyncResult, ControlNode
 from griptape_nodes.exe_types.param_components.log_parameter import LogParameter
+from griptape_nodes.exe_types.param_components.project_file_parameter import ProjectFileParameter
 from griptape_nodes.files.file import File
-from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
 from huggingface_hub import hf_hub_download  # pyright: ignore[reportMissingImports]
 from sam2.build_sam import HF_MODEL_ID_TO_FILENAMES, build_sam2_video_predictor  # type: ignore[reportMissingImports]
 
@@ -94,6 +94,13 @@ class DinoSam2VideoDetector(ControlNode):
         )
 
         self.log_params.add_output_parameters()
+
+        self._output_video_file = ProjectFileParameter(
+            node=self,
+            name="output_video_file",
+            default_filename="output_video.mp4",
+        )
+        self._output_video_file.add_parameter()
 
     def get_video_mp4(self) -> str:
         """Get the input video as a URL."""
@@ -317,8 +324,6 @@ class DinoSam2VideoDetector(ControlNode):
 
     def _publish_output_video(self, video_path: Path) -> None:
         """Publish the output video."""
-        import uuid
-
-        filename = f"{uuid.uuid4()}{video_path.suffix}"
-        url = GriptapeNodes.StaticFilesManager().save_static_file(video_path.read_bytes(), filename)
-        self.parameter_output_values["output_video"] = VideoUrlArtifact(url)
+        dest = self._output_video_file.build_file()
+        saved = dest.write_bytes(video_path.read_bytes())
+        self.parameter_output_values["output_video"] = VideoUrlArtifact(saved.location)

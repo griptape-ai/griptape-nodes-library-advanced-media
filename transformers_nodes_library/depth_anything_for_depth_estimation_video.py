@@ -1,6 +1,5 @@
 import logging
 import tempfile
-import uuid
 from pathlib import Path
 
 import diffusers  # type: ignore[reportMissingImports]
@@ -8,7 +7,7 @@ import PIL.Image
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import AsyncResult, ControlNode
-from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
+from griptape_nodes.exe_types.param_components.project_file_parameter import ProjectFileParameter
 
 from transformers_nodes_library.depth_anything_for_depth_estimation_parameters import (
     DepthAnythingForDepthEstimationParameters,
@@ -40,6 +39,13 @@ class DepthAnythingForDepthEstimationVideo(ControlNode):
             )
         )
         self.params.add_logs_output_parameter()
+
+        self._output_video_file = ProjectFileParameter(
+            node=self,
+            name="output_video_file",
+            default_filename="output_video.mp4",
+        )
+        self._output_video_file.add_parameter()
 
     def process(self) -> AsyncResult | None:
         yield lambda: self._process()
@@ -114,6 +120,6 @@ class DepthAnythingForDepthEstimationVideo(ControlNode):
 
     def _publish_output_video(self, video_path: Path) -> VideoUrlArtifact:
         """Publish output video to static files and return artifact."""
-        filename = f"{uuid.uuid4()}{video_path.suffix}"
-        url = GriptapeNodes.StaticFilesManager().save_static_file(video_path.read_bytes(), filename)
-        return VideoUrlArtifact(url)
+        dest = self._output_video_file.build_file()
+        saved = dest.write_bytes(video_path.read_bytes())
+        return VideoUrlArtifact(saved.location)

@@ -1,6 +1,5 @@
 import logging
 import tempfile
-import uuid
 from pathlib import Path
 
 import diffusers  # type: ignore[reportMissingImports]
@@ -8,7 +7,7 @@ from griptape.artifacts import ImageUrlArtifact
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterList, ParameterMode
 from griptape_nodes.exe_types.node_types import AsyncResult, ControlNode
-from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
+from griptape_nodes.exe_types.param_components.project_file_parameter import ProjectFileParameter
 from PIL import Image  # type: ignore[reportMissingImports]
 
 from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
@@ -85,6 +84,20 @@ class RandomFramesToVideoWanVaceAux(ControlNode):
                 allowed_modes={ParameterMode.OUTPUT},
             )
         )
+
+        self._output_video_file = ProjectFileParameter(
+            node=self,
+            name="output_video_file",
+            default_filename="output_video.mp4",
+        )
+        self._output_video_file.add_parameter()
+
+        self._output_mask_file = ProjectFileParameter(
+            node=self,
+            name="output_mask_file",
+            default_filename="output_mask.mp4",
+        )
+        self._output_mask_file.add_parameter()
 
     def validate_before_node_run(self) -> list[Exception] | None:
         errors = []
@@ -179,16 +192,16 @@ class RandomFramesToVideoWanVaceAux(ControlNode):
 
         try:
             # Save video
-            video_filename = f"{uuid.uuid4()}.mp4"
-            video_url = GriptapeNodes.StaticFilesManager().save_static_file(video_path.read_bytes(), video_filename)
-            self.set_parameter_value("output_video", VideoUrlArtifact(video_url))
-            self.parameter_output_values["output_video"] = VideoUrlArtifact(video_url)
+            video_dest = self._output_video_file.build_file()
+            video_saved = video_dest.write_bytes(video_path.read_bytes())
+            self.set_parameter_value("output_video", VideoUrlArtifact(video_saved.location))
+            self.parameter_output_values["output_video"] = VideoUrlArtifact(video_saved.location)
 
             # Save mask
-            mask_filename = f"{uuid.uuid4()}.mp4"
-            mask_url = GriptapeNodes.StaticFilesManager().save_static_file(mask_path.read_bytes(), mask_filename)
-            self.set_parameter_value("output_mask", VideoUrlArtifact(mask_url))
-            self.parameter_output_values["output_mask"] = VideoUrlArtifact(mask_url)
+            mask_dest = self._output_mask_file.build_file()
+            mask_saved = mask_dest.write_bytes(mask_path.read_bytes())
+            self.set_parameter_value("output_mask", VideoUrlArtifact(mask_saved.location))
+            self.parameter_output_values["output_mask"] = VideoUrlArtifact(mask_saved.location)
 
         finally:
             # Clean up temporary files

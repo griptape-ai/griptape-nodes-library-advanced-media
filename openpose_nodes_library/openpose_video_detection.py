@@ -3,7 +3,6 @@ import logging
 import os
 import subprocess
 import tempfile
-import uuid
 from pathlib import Path
 from typing import Any
 
@@ -18,8 +17,8 @@ from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_file
     HuggingFaceRepoFileParameter,  # type: ignore[reportMissingImports]
 )
 from griptape_nodes.exe_types.param_components.log_parameter import LogParameter
+from griptape_nodes.exe_types.param_components.project_file_parameter import ProjectFileParameter
 from griptape_nodes.files.file import File
-from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
 from safetensors.torch import load_file  # type: ignore[reportMissingImports]
 
 # static_ffmpeg is dynamically installed by the library loader at runtime
@@ -190,6 +189,13 @@ class OpenPoseVideoDetection(ControlNode):
         )
         self.log_params.add_output_parameters()
 
+        self._output_video_file = ProjectFileParameter(
+            node=self,
+            name="output_video_file",
+            default_filename="output_video.mp4",
+        )
+        self._output_video_file.add_parameter()
+
         # Internal state
         self._model = None
         self._model_type = None
@@ -235,9 +241,9 @@ class OpenPoseVideoDetection(ControlNode):
         pass
 
     def publish_output_video(self, video_path: Path) -> None:
-        filename = f"{uuid.uuid4()}{video_path.suffix}"
-        url = GriptapeNodes.StaticFilesManager().save_static_file(video_path.read_bytes(), filename)
-        self.parameter_output_values["output_video"] = VideoUrlArtifact(url)
+        dest = self._output_video_file.build_file()
+        saved = dest.write_bytes(video_path.read_bytes())
+        self.parameter_output_values["output_video"] = VideoUrlArtifact(saved.location)
 
     def get_openpose_model(self) -> tuple[Body | Hand, str]:
         repo_id, revision = self._huggingface_repo_parameter.get_repo_revision()
@@ -442,7 +448,7 @@ class OpenPoseVideoDetection(ControlNode):
                         except subprocess.CalledProcessError:
                             # ffmpeg failed, keep video without audio
                             if temp_video_path.exists():
-                                temp_video_path.rename(output_path)
+                                temp_video_path.replace(output_path)
                             self.log_params.append_to_logs(
                                 "Video saved without audio (ffmpeg failed - original may not have audio)\n"
                             )
@@ -450,7 +456,7 @@ class OpenPoseVideoDetection(ControlNode):
                         except FileNotFoundError:
                             # Fallback to video without audio when ffmpeg is unavailable
                             if temp_video_path.exists():
-                                temp_video_path.rename(output_path)
+                                temp_video_path.replace(output_path)
                             self.log_params.append_to_logs("Video saved without audio (ffmpeg not available)\n")
 
             except Exception as e:
