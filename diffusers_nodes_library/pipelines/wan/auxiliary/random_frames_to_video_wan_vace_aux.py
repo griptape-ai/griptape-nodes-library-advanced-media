@@ -86,12 +86,16 @@ class RandomFramesToVideoWanVaceAux(ControlNode):
         )
 
         self._output_video_file = ProjectFileParameter(
-            node=self, name="output_video_file", default_filename="output_video.mp4",
+            node=self,
+            name="output_video_file",
+            default_filename="output_video.mp4",
         )
         self._output_video_file.add_parameter()
 
         self._output_mask_file = ProjectFileParameter(
-            node=self, name="output_mask_file", default_filename="output_mask.mp4",
+            node=self,
+            name="output_mask_file",
+            default_filename="output_mask.mp4",
         )
         self._output_mask_file.add_parameter()
 

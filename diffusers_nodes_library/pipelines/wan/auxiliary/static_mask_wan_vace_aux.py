@@ -9,14 +9,13 @@ from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import AsyncResult, ControlNode
 from griptape_nodes.exe_types.param_components.project_file_parameter import ProjectFileParameter
+from griptape_nodes.files.file import File
 from PIL import Image  # type: ignore[reportMissingImports]
 
 from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
     image_artifact_to_pil,
 )
 from utils.image_utils import load_image_from_url_artifact
-
-from griptape_nodes.files.file import File
 
 logger = logging.getLogger("diffusers_nodes_library")
 
@@ -59,12 +58,16 @@ class StaticMaskWanVaceAux(ControlNode):
         )
 
         self._output_video_file = ProjectFileParameter(
-            node=self, name="output_video_file", default_filename="output_video.mp4",
+            node=self,
+            name="output_video_file",
+            default_filename="output_video.mp4",
         )
         self._output_video_file.add_parameter()
 
         self._output_mask_file = ProjectFileParameter(
-            node=self, name="output_mask_file", default_filename="output_mask.mp4",
+            node=self,
+            name="output_mask_file",
+            default_filename="output_mask.mp4",
         )
         self._output_mask_file.add_parameter()
 

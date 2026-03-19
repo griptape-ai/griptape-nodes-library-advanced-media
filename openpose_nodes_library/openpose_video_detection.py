@@ -190,7 +190,9 @@ class OpenPoseVideoDetection(ControlNode):
         self.log_params.add_output_parameters()
 
         self._output_video_file = ProjectFileParameter(
-            node=self, name="output_video_file", default_filename="output_video.mp4",
+            node=self,
+            name="output_video_file",
+            default_filename="output_video.mp4",
         )
         self._output_video_file.add_parameter()
 
