@@ -446,7 +446,7 @@ class OpenPoseVideoDetection(ControlNode):
                         except subprocess.CalledProcessError:
                             # ffmpeg failed, keep video without audio
                             if temp_video_path.exists():
-                                temp_video_path.rename(output_path)
+                                temp_video_path.replace(output_path)
                             self.log_params.append_to_logs(
                                 "Video saved without audio (ffmpeg failed - original may not have audio)\n"
                             )
@@ -454,7 +454,7 @@ class OpenPoseVideoDetection(ControlNode):
                         except FileNotFoundError:
                             # Fallback to video without audio when ffmpeg is unavailable
                             if temp_video_path.exists():
-                                temp_video_path.rename(output_path)
+                                temp_video_path.replace(output_path)
                             self.log_params.append_to_logs("Video saved without audio (ffmpeg not available)\n")
 
             except Exception as e:
