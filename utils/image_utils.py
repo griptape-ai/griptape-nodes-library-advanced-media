@@ -20,8 +20,8 @@ def load_image_from_url_artifact(image_url_artifact: ImageUrlArtifact) -> ImageA
         ValueError: If image download fails with descriptive error message
     """
     try:
-        image_bytes = Path(File(image_url_artifact.value).resolve()).read_bytes()
-    except (URLError, RequestException, ConnectionError, TimeoutError) as err:
+        image_bytes = image_url_artifact.to_bytes()
+    except (URLError, RequestException, ConnectionError, TimeoutError, OSError) as err:
         details = (
             f"Failed to download image at '{image_url_artifact.value}'.\n"
             f"If this workflow was shared from another engine installation, "
