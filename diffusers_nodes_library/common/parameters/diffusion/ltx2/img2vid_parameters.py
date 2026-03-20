@@ -3,8 +3,8 @@ import logging
 import diffusers  # type: ignore[reportMissingImports]
 import torch  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.node_types import BaseNode
-from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_variant_parameter import (
-    HuggingFaceRepoVariantParameter,
+from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import (
+    HuggingFaceRepoParameter,
 )
 
 from diffusers_nodes_library.common.parameters.diffusion.pipeline_type_parameters import (
@@ -13,19 +13,42 @@ from diffusers_nodes_library.common.parameters.diffusion.pipeline_type_parameter
 
 logger = logging.getLogger("diffusers_nodes_library")
 
-LTX_2_I2V_REPO_ID = "Lightricks/LTX-2"
-LTX_2_I2V_VARIANTS = ["ltx-2-19b-dev-fp8", "ltx-2-19b-dev-fp4", "ltx-2-19b-dev"]
-QUANTIZED_LTX_2_I2V_VARIANTS = ["ltx-2-19b-dev-fp8", "ltx-2-19b-dev-fp4"]
+# LTX-2.0 models (variant-based with :: separator)
+LTX_2_0_I2V_VARIANTS = [
+    "Lightricks/LTX-2::ltx-2-19b-dev",
+    "Lightricks/LTX-2::ltx-2-19b-dev-fp8",
+    "Lightricks/LTX-2::ltx-2-19b-dev-fp4",
+]
+
+# LTX-2.3 models (separate repositories)
+LTX_2_3_I2V_MODELS = [
+    "Lightricks/LTX-2.3",
+    "Lightricks/LTX-2.3-fp8",
+    "Lightricks/LTX-2.3-nvfp4",
+    "Lightricks/LTX-2.3-22b-IC-LoRA-Union-Control",
+    "Lightricks/LTX-2.3-22b-IC-LoRA-Motion-Track-Control",
+]
+
+# Combined model list
+ALL_LTX_I2V_MODELS = LTX_2_0_I2V_VARIANTS + LTX_2_3_I2V_MODELS
+
+# Quantized models (both versions)
+QUANTIZED_LTX_I2V_MODELS = [
+    "Lightricks/LTX-2::ltx-2-19b-dev-fp8",
+    "Lightricks/LTX-2::ltx-2-19b-dev-fp4",
+    "Lightricks/LTX-2.3-fp8",
+    "Lightricks/LTX-2.3-nvfp4",
+]
 
 
 class LTX2ImageToVideoPipelineParameters(DiffusionPipelineTypePipelineParameters):
-    def __init__(self, node: BaseNode, *, list_all_models: bool = False):  # noqa: ARG002
+    def __init__(self, node: BaseNode, *, list_all_models: bool = False):
         super().__init__(node)
-        self._model_repo_parameter = HuggingFaceRepoVariantParameter(
+        self._model_repo_parameter = HuggingFaceRepoParameter(
             node,
-            repo_id=LTX_2_I2V_REPO_ID,
-            variants=LTX_2_I2V_VARIANTS,
+            repo_ids=ALL_LTX_I2V_MODELS,
             parameter_name="model",
+            list_all_models=list_all_models,
         )
 
     def add_input_parameters(self) -> None:
@@ -52,15 +75,27 @@ class LTX2ImageToVideoPipelineParameters(DiffusionPipelineTypePipelineParameters
         return errors or None
 
     def build_pipeline(self) -> diffusers.LTX2ImageToVideoPipeline:
-        repo_id, variant, revision = self._model_repo_parameter.get_repo_variant_revision()
+        repo_id, revision = self._model_repo_parameter.get_repo_revision()
+
+        # LTX-2.0 variant-based loading (repo_id contains :: separator)
+        if "::" in repo_id:
+            base_repo, variant = repo_id.split("::")
+            return diffusers.LTX2ImageToVideoPipeline.from_pretrained(
+                pretrained_model_name_or_path=base_repo,
+                transformer_id=variant,
+                revision=revision,
+                torch_dtype=torch.bfloat16,
+                local_files_only=True,
+            )
+
+        # LTX-2.3 direct repo loading
         return diffusers.LTX2ImageToVideoPipeline.from_pretrained(
             pretrained_model_name_or_path=repo_id,
-            transformer_id=variant,
             revision=revision,
             torch_dtype=torch.bfloat16,
             local_files_only=True,
         )
 
     def is_prequantized(self) -> bool:
-        _, variant, _ = self._model_repo_parameter.get_repo_variant_revision()
-        return variant in QUANTIZED_LTX_2_I2V_VARIANTS
+        repo_id, _ = self._model_repo_parameter.get_repo_revision()
+        return repo_id in QUANTIZED_LTX_I2V_MODELS
