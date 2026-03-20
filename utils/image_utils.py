@@ -1,9 +1,7 @@
-from pathlib import Path
 from urllib.error import URLError
 
 from griptape.artifacts import ImageArtifact, ImageUrlArtifact
 from griptape.loaders import ImageLoader
-from griptape_nodes.files.file import File
 from requests.exceptions import RequestException
 
 
