@@ -7,38 +7,12 @@ from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_para
     HuggingFaceRepoParameter,
 )
 
+from diffusers_nodes_library.common.parameters.diffusion.ltx2.models import ALL_LTX_MODELS, QUANTIZED_LTX_MODELS
 from diffusers_nodes_library.common.parameters.diffusion.pipeline_type_parameters import (
     DiffusionPipelineTypePipelineParameters,
 )
 
 logger = logging.getLogger("diffusers_nodes_library")
-
-# LTX-2.0 models (variant-based with :: separator)
-LTX_2_0_I2V_VARIANTS = [
-    "Lightricks/LTX-2::ltx-2-19b-dev",
-    "Lightricks/LTX-2::ltx-2-19b-dev-fp8",
-    "Lightricks/LTX-2::ltx-2-19b-dev-fp4",
-]
-
-# LTX-2.3 models (separate repositories)
-LTX_2_3_I2V_MODELS = [
-    "Lightricks/LTX-2.3",
-    "Lightricks/LTX-2.3-fp8",
-    "Lightricks/LTX-2.3-nvfp4",
-    "Lightricks/LTX-2.3-22b-IC-LoRA-Union-Control",
-    "Lightricks/LTX-2.3-22b-IC-LoRA-Motion-Track-Control",
-]
-
-# Combined model list
-ALL_LTX_I2V_MODELS = LTX_2_0_I2V_VARIANTS + LTX_2_3_I2V_MODELS
-
-# Quantized models (both versions)
-QUANTIZED_LTX_I2V_MODELS = [
-    "Lightricks/LTX-2::ltx-2-19b-dev-fp8",
-    "Lightricks/LTX-2::ltx-2-19b-dev-fp4",
-    "Lightricks/LTX-2.3-fp8",
-    "Lightricks/LTX-2.3-nvfp4",
-]
 
 
 class LTX2ImageToVideoPipelineParameters(DiffusionPipelineTypePipelineParameters):
@@ -46,7 +20,7 @@ class LTX2ImageToVideoPipelineParameters(DiffusionPipelineTypePipelineParameters
         super().__init__(node)
         self._model_repo_parameter = HuggingFaceRepoParameter(
             node,
-            repo_ids=ALL_LTX_I2V_MODELS,
+            repo_ids=ALL_LTX_MODELS,
             parameter_name="model",
             list_all_models=list_all_models,
         )
@@ -98,4 +72,4 @@ class LTX2ImageToVideoPipelineParameters(DiffusionPipelineTypePipelineParameters
 
     def is_prequantized(self) -> bool:
         repo_id, _ = self._model_repo_parameter.get_repo_revision()
-        return repo_id in QUANTIZED_LTX_I2V_MODELS
+        return repo_id in QUANTIZED_LTX_MODELS
