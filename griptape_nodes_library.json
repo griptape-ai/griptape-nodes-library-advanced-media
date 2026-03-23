@@ -350,6 +350,15 @@
                 "display_name": "Load LoRA",
                 "group": "diffusion"
             }
+        },
+        {
+            "class_name": "ClearPipelineCacheNode",
+            "file_path": "utils/clear_pipeline_cache_node.py",
+            "metadata": {
+                "category": "utils",
+                "description": "Clear all cached diffusion pipelines from memory.",
+                "display_name": "Clear Pipeline Cache"
+            }
         }
     ],
     "workflows": [
