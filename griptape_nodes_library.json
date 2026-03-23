@@ -356,7 +356,7 @@
             "file_path": "utils/clear_pipeline_cache_node.py",
             "metadata": {
                 "category": "utils",
-                "description": "Clear all cached diffusion pipelines from memory.",
+                "description": "Forcefully evicts all cached diffusion pipelines (Flux, WAN, YOLO) from GPU/CPU memory. Under normal conditions the engine manages pipeline memory automatically. Use this node when diagnosing out-of-memory errors or when you need to guarantee a clean slate before loading a different model.",
                 "display_name": "Clear Pipeline Cache"
             }
         }
