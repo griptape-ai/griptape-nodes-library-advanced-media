@@ -8,50 +8,51 @@ version/get: ## Get version.
 version/set: ## Set version. Usage: make version/set v=1.2.3
 	@jq --arg v "$(v)" '.metadata.library_version = $$v' $(LIBRARY_JSON) > $(LIBRARY_JSON).tmp
 	@mv $(LIBRARY_JSON).tmp $(LIBRARY_JSON)
-	@make version/commit
+	@$(MAKE) --no-print-directory version/commit
 
 .PHONY: version/patch
 version/patch: ## Bump patch version.
-	@CURRENT=$$(make version/get); \
+	@CURRENT=$$($(MAKE) --no-print-directory version/get); \
 	IFS='.' read -r major minor patch <<< "$$CURRENT"; \
 	NEW_VERSION="$${major}.$${minor}.$$((patch + 1))"; \
 	jq --arg v "$$NEW_VERSION" '.metadata.library_version = $$v' $(LIBRARY_JSON) > $(LIBRARY_JSON).tmp; \
 	mv $(LIBRARY_JSON).tmp $(LIBRARY_JSON); \
 	echo "Bumped to $$NEW_VERSION"
-	@make version/commit
+	@$(MAKE) --no-print-directory version/commit
 
 .PHONY: version/minor
 version/minor: ## Bump minor version.
-	@CURRENT=$$(make version/get); \
+	@CURRENT=$$($(MAKE) --no-print-directory version/get); \
 	IFS='.' read -r major minor patch <<< "$$CURRENT"; \
 	NEW_VERSION="$${major}.$$((minor + 1)).0"; \
 	jq --arg v "$$NEW_VERSION" '.metadata.library_version = $$v' $(LIBRARY_JSON) > $(LIBRARY_JSON).tmp; \
 	mv $(LIBRARY_JSON).tmp $(LIBRARY_JSON); \
 	echo "Bumped to $$NEW_VERSION"
-	@make version/commit
+	@$(MAKE) --no-print-directory version/commit
 
 .PHONY: version/major
 version/major: ## Bump major version.
-	@CURRENT=$$(make version/get); \
+	@CURRENT=$$($(MAKE) --no-print-directory version/get); \
 	IFS='.' read -r major minor patch <<< "$$CURRENT"; \
 	NEW_VERSION="$$((major + 1)).0.0"; \
 	jq --arg v "$$NEW_VERSION" '.metadata.library_version = $$v' $(LIBRARY_JSON) > $(LIBRARY_JSON).tmp; \
 	mv $(LIBRARY_JSON).tmp $(LIBRARY_JSON); \
 	echo "Bumped to $$NEW_VERSION"
-	@make version/commit
+	@$(MAKE) --no-print-directory version/commit
 
 .PHONY: version/commit
 version/commit: ## Commit version.
 	@git add $(LIBRARY_JSON)
-	@git commit -m "chore: bump v$$(make version/get)"
+	@git commit -m "chore: bump v$$($(MAKE) --no-print-directory version/get)"
 
 .PHONY: version/publish
 version/publish: ## Create and push git tags.
 	@git fetch --tags --force
-	@git tag "v$$(make version/get)"
-	@git tag stable -f
-	@git push origin "v$$(make version/get)"
-	@git push -f origin stable
+	@VERSION=$$($(MAKE) --no-print-directory version/get); \
+	git tag "v$$VERSION"; \
+	git tag stable -f; \
+	git push origin "v$$VERSION"; \
+	git push -f origin stable
 
 .PHONY: deps/sync
 deps/sync: ## Sync pip_dependencies in the library JSON from pyproject.toml.
