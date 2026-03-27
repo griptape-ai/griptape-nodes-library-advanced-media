@@ -4,9 +4,8 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 import cv2  # type: ignore[reportMissingImports]
-import requests
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
-from requests.exceptions import RequestException
+from griptape_nodes.files.file import File
 
 
 def download_video_to_temp_file(video_url_artifact: VideoUrlArtifact) -> Path:
@@ -34,18 +33,12 @@ def download_video_to_temp_file(video_url_artifact: VideoUrlArtifact) -> Path:
     temp_path = Path(temp_path_str)
 
     try:
-        response = requests.get(url, stream=True, timeout=300)
-        response.raise_for_status()
-        with temp_path.open("wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-    except (RequestException, ConnectionError, TimeoutError) as err:
+        video_bytes = File(url).read_bytes()
+        temp_path.write_bytes(video_bytes)
+    except Exception as err:
         temp_path.unlink(missing_ok=True)
         details = f"Failed to download video at '{url}'.\nError: {err}"
         raise ValueError(details) from err
-    except Exception:
-        temp_path.unlink(missing_ok=True)
-        raise
 
     return temp_path
 
