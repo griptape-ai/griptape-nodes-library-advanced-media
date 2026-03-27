@@ -28,6 +28,7 @@ def download_video_to_temp_file(video_url_artifact: VideoUrlArtifact) -> Path:
     url_path = Path(unquote(parsed_url.path))
     suffix = url_path.suffix or ".mp4"
 
+    # TODO(#60): Use ProjectFileDestination with temp files situation
     fd, temp_path_str = tempfile.mkstemp(suffix=suffix)
     os.close(fd)
     temp_path = Path(temp_path_str)
