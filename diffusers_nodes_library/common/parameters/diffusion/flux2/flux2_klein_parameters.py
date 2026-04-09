@@ -2,8 +2,12 @@ import logging
 
 import diffusers  # type: ignore[reportMissingImports]
 import torch  # type: ignore[reportMissingImports]
+from griptape_nodes.exe_types.core_types import Parameter
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
+from griptape_nodes.exe_types.param_components.huggingface.huggingface_utils import (
+    list_repo_revisions_in_cache,
+)
 
 from diffusers_nodes_library.common.parameters.diffusion.pipeline_type_parameters import (
     DiffusionPipelineTypePipelineParameters,
@@ -40,13 +44,23 @@ class Flux2KleinPipelineParameters(DiffusionPipelineTypePipelineParameters):
 
     def add_input_parameters(self) -> None:
         self._model_repo_parameter.add_input_parameters()
+        self._node.add_parameter(
+            Parameter(
+                name="use_small_decoder",
+                default_value=False,
+                type="bool",
+                tooltip="Use FLUX.2-small-decoder for faster VAE decoding (requires model to be downloaded)",
+            )
+        )
 
     def remove_input_parameters(self) -> None:
         self._model_repo_parameter.remove_input_parameters()
+        self._node.remove_parameter_element_by_name("use_small_decoder")
 
     def get_config_kwargs(self) -> dict:
         return {
             "model": self._node.get_parameter_value("model"),
+            "use_small_decoder": self._node.get_parameter_value("use_small_decoder"),
         }
 
     @property
@@ -63,13 +77,32 @@ class Flux2KleinPipelineParameters(DiffusionPipelineTypePipelineParameters):
 
     def build_pipeline(self) -> diffusers.Flux2KleinPipeline:
         base_repo_id, base_revision = self._model_repo_parameter.get_repo_revision()
+        use_small_decoder = self._node.get_parameter_value("use_small_decoder")
 
-        return diffusers.Flux2KleinPipeline.from_pretrained(
-            pretrained_model_name_or_path=base_repo_id,
-            revision=base_revision,
-            torch_dtype=torch.bfloat16,
-            local_files_only=True,
-        )
+        # Build pipeline kwargs
+        pipeline_kwargs = {
+            "pretrained_model_name_or_path": base_repo_id,
+            "revision": base_revision,
+            "torch_dtype": torch.bfloat16,
+            "local_files_only": True,
+        }
+
+        # Optionally load the small decoder VAE if requested and available
+        if use_small_decoder:
+            small_decoder_repo = "black-forest-labs/FLUX.2-small-decoder"
+            # Check if the small decoder is downloaded
+            cached_revisions = list_repo_revisions_in_cache(small_decoder_repo)
+            if cached_revisions:
+                logger.info("Loading FLUX.2-small-decoder VAE")
+                pipeline_kwargs["vae"] = diffusers.AutoencoderKLFlux2.from_pretrained(
+                    small_decoder_repo,
+                    torch_dtype=torch.bfloat16,
+                    local_files_only=True,
+                )
+            else:
+                logger.warning("use_small_decoder is enabled but %s is not downloaded. ", small_decoder_repo)
+
+        return diffusers.Flux2KleinPipeline.from_pretrained(**pipeline_kwargs)
 
     def is_prequantized(self) -> bool:
         repo_id, _ = self._model_repo_parameter.get_repo_revision()
