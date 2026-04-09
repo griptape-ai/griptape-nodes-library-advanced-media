@@ -11,7 +11,7 @@ dependencies = [
     "beautifulsoup4>=4.13.4",
     "controlnet-aux>=0.0.9",
     "static-ffmpeg>=2.8",
-    "diffusers @ https://github.com/huggingface/diffusers/archive/61f175660a8ac54f1470a74a810e6c38fb4795d5.zip",
+    "diffusers @ https://github.com/huggingface/diffusers/archive/9884ed2343f3545c5d38c7759e5cdf43836bd793.zip",
     "imageio[ffmpeg]>=2.37.2",
     "ninja>=1.13.0",
     "numpy>=2.2.4",
