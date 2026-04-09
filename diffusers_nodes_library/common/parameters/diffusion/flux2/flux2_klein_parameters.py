@@ -100,10 +100,7 @@ class Flux2KleinPipelineParameters(DiffusionPipelineTypePipelineParameters):
                     local_files_only=True,
                 )
             else:
-                logger.warning(
-                    "use_small_decoder is enabled but %s is not downloaded. ",
-                    small_decoder_repo
-                )
+                logger.warning("use_small_decoder is enabled but %s is not downloaded. ", small_decoder_repo)
 
         return diffusers.Flux2KleinPipeline.from_pretrained(**pipeline_kwargs)
 
