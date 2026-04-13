@@ -1,19 +1,14 @@
 import logging
-import tempfile
-from pathlib import Path
-from typing import Any
 
 import diffusers  # type: ignore[reportMissingImports]
-import torch  # type: ignore[reportMissingImports]
 from griptape.artifacts import ImageUrlArtifact
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterList, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
-from griptape_nodes.files.project_file import ProjectFileDestination
 from PIL import Image  # type: ignore[reportMissingImports]
 
-from diffusers_nodes_library.common.parameters.diffusion.runtime_parameters import (
-    DiffusionPipelineRuntimeParameters,
+from diffusers_nodes_library.common.parameters.diffusion.wan.base_runtime_parameters import (
+    WanVideoPipelineRuntimeParametersBase,
 )
 from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
     image_artifact_to_pil,
@@ -23,7 +18,7 @@ from utils.image_utils import load_image_from_url_artifact
 logger = logging.getLogger("diffusers_nodes_library")
 
 
-class WanVacePipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
+class WanVacePipelineRuntimeParameters(WanVideoPipelineRuntimeParametersBase):
     def __init__(self, node: BaseNode):
         super().__init__(node)
 
@@ -107,19 +102,6 @@ class WanVacePipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
     def remove_output_parameters(self) -> None:
         self._node.remove_parameter_element_by_name("output_video")
 
-    def publish_output_image_preview_placeholder(self) -> None:
-        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file:
-            temp_path = Path(temp_file.name)
-        try:
-            black_frame = Image.new("RGB", (320, 240), color="black")
-            diffusers.utils.export_to_video([black_frame], str(temp_path), fps=1)
-            dest = ProjectFileDestination.from_situation(filename="placeholder_video.mp4", situation="save_node_output")
-            saved = dest.write_bytes(temp_path.read_bytes())
-            self._node.publish_update_to_parameter("output_video", VideoUrlArtifact(saved.location))
-        finally:
-            if temp_path.exists():
-                temp_path.unlink()
-
     def _get_pipe_kwargs(self) -> dict:
         return {
             "video": self.get_input_video_pil_frames(),
@@ -129,7 +111,6 @@ class WanVacePipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
             "negative_prompt": self._node.get_parameter_value("negative_prompt"),
             "num_frames": self.get_num_frames(),
             "guidance_scale": self._node.get_parameter_value("guidance_scale"),
-            "output_type": "pil",
         }
 
     def validate_before_node_run(self) -> list[Exception] | None:
@@ -216,64 +197,3 @@ class WanVacePipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
 
         # Use diffusers loading utilities to convert video URL to frames
         return diffusers.utils.load_video(video_artifact.value)
-
-    def latents_to_video_mp4(self, pipe: diffusers.WanVACEPipeline, latents: Any) -> Path:
-        """Convert latents to video frames and export as MP4 file."""
-        self.get_num_frames()
-        self.get_width()
-        self.get_height()
-
-        # First convert latents to frames using the VAE
-        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file_obj:
-            temp_file = Path(temp_file_obj.name)
-
-        try:
-            # Convert latents to video frames using VAE decode
-            latents = latents.to(pipe.vae.dtype)
-
-            # Apply latents normalization as per the WAN pipeline
-            latents_mean = (
-                torch.tensor(pipe.vae.config.latents_mean)
-                .view(1, pipe.vae.config.z_dim, 1, 1, 1)
-                .to(latents.device, latents.dtype)
-            )
-            latents_std = 1.0 / torch.tensor(pipe.vae.config.latents_std).view(1, pipe.vae.config.z_dim, 1, 1, 1).to(
-                latents.device, latents.dtype
-            )
-            latents = latents / latents_std + latents_mean
-
-            # Decode latents to video using VAE
-            video = pipe.vae.decode(latents, return_dict=False)[0]
-            frames = pipe.video_processor.postprocess_video(video, output_type="pil")[0]
-
-            # Export frames to video
-            diffusers.utils.export_to_video(frames, str(temp_file), fps=16)
-        except Exception:
-            # Clean up on error
-            if temp_file.exists():
-                temp_file.unlink()
-            raise
-        else:
-            return temp_file
-
-    def publish_output_video_preview_latents(self, pipe: diffusers.WanVACEPipeline, latents: Any) -> None:
-        """Publish a preview video from latents during generation."""
-        preview_video_path = None
-        try:
-            preview_video_path = self.latents_to_video_mp4(pipe, latents)
-            dest = ProjectFileDestination.from_situation(filename="preview_video.mp4", situation="save_node_output")
-            saved = dest.write_bytes(preview_video_path.read_bytes())
-            self._node.publish_update_to_parameter("output_video", VideoUrlArtifact(saved.location))
-        except Exception as e:
-            logger.warning("Failed to generate video preview from latents: %s", e)
-        finally:
-            # Clean up temporary file
-            if preview_video_path is not None and preview_video_path.exists():
-                preview_video_path.unlink()
-
-    def publish_output_video(self, video_path: Path) -> None:
-        dest = ProjectFileDestination.from_situation(
-            filename=f"output_video{video_path.suffix}", situation="save_node_output"
-        )
-        saved = dest.write_bytes(video_path.read_bytes())
-        self._node.parameter_output_values["output_video"] = VideoUrlArtifact(saved.location)
