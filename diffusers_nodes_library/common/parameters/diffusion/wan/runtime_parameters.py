@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 import diffusers  # type: ignore[reportMissingImports]
+import PIL.Image
 import torch  # type: ignore[reportMissingImports]
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
@@ -73,6 +74,19 @@ class WanPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
 
     def remove_output_parameters(self) -> None:
         self._node.remove_parameter_element_by_name("output_video")
+
+    def publish_output_image_preview_placeholder(self) -> None:
+        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file:
+            temp_path = Path(temp_file.name)
+        try:
+            black_frame = PIL.Image.new("RGB", (320, 240), color="black")
+            diffusers.utils.export_to_video([black_frame], str(temp_path), fps=1)
+            dest = ProjectFileDestination.from_situation(filename="placeholder_video.mp4", situation="save_node_output")
+            saved = dest.write_bytes(temp_path.read_bytes())
+            self._node.publish_update_to_parameter("output_video", VideoUrlArtifact(saved.location))
+        finally:
+            if temp_path.exists():
+                temp_path.unlink()
 
     def _get_pipe_kwargs(self) -> dict:
         return {

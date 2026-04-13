@@ -123,7 +123,7 @@ class WanImageToVideoPipelineRuntimeParameters(DiffusionPipelineRuntimeParameter
             "guidance_scale": self._node.get_parameter_value("guidance_scale"),
         }
 
-    def publish_output_video_preview_placeholder(self) -> None:
+    def publish_output_image_preview_placeholder(self) -> None:
         # Create a small black video placeholder
         with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file:
             temp_path = Path(temp_file.name)
