@@ -129,4 +129,5 @@ class WanVideoPipelineRuntimeParametersBase(DiffusionPipelineRuntimeParameters):
             filename=f"output_video{video_path.suffix}", situation="save_node_output"
         )
         saved = dest.write_bytes(video_path.read_bytes())
-        self._node.parameter_output_values["output_video"] = VideoUrlArtifact(saved.location)
+        video_artifact = VideoUrlArtifact(saved.location)
+        self._node.publish_update_to_parameter("output_video", video_artifact)
