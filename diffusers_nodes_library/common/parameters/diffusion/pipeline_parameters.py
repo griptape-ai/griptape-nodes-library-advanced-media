@@ -115,6 +115,9 @@ from diffusers_nodes_library.common.parameters.diffusion.wan.vace_runtime_parame
 from diffusers_nodes_library.common.parameters.diffusion.wan.vid2vid_runtime_parameters import (
     WanVideoToVideoPipelineRuntimeParameters,
 )
+from diffusers_nodes_library.common.parameters.diffusion.wan.wan_animate_runtime_parameters import (
+    WanAnimatePipelineRuntimeParameters,
+)
 from diffusers_nodes_library.common.parameters.diffusion.wuerstchen.runtime_parameters import (
     WuerstchenCombinedPipelineRuntimeParameters,
 )
@@ -213,6 +216,8 @@ class DiffusionPipelineParameters:
                 self._runtime_parameters = StableDiffusionDiffEditPipelineRuntimeParameters(self._node)
             case "WanPipeline":
                 self._runtime_parameters = WanPipelineRuntimeParameters(self._node)
+            case "WanAnimatePipeline":
+                self._runtime_parameters = WanAnimatePipelineRuntimeParameters(self._node)
             case "WanVacePipeline":
                 self._runtime_parameters = WanVacePipelineRuntimeParameters(self._node)
             case "WanImageToVideoPipeline":

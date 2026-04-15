@@ -12,14 +12,13 @@ from diffusers_nodes_library.common.parameters.diffusion.pipeline_type_parameter
 logger = logging.getLogger("diffusers_nodes_library")
 
 
-class WanVideoToVideoPipelineParameters(DiffusionPipelineTypePipelineParameters):
+class WanAnimatePipelineParameters(DiffusionPipelineTypePipelineParameters):
     def __init__(self, node: BaseNode, *, list_all_models: bool = False):
         super().__init__(node)
         self._model_repo_parameter = HuggingFaceRepoParameter(
             node,
             repo_ids=[
-                "Wan-AI/Wan2.1-T2V-1.3B-Diffusers",
-                "Wan-AI/Wan2.1-T2V-14B-Diffusers",
+                "Wan-AI/Wan2.2-Animate-14B-Diffusers",
             ],
             parameter_name="model",
             list_all_models=list_all_models,
@@ -38,7 +37,7 @@ class WanVideoToVideoPipelineParameters(DiffusionPipelineTypePipelineParameters)
 
     @property
     def pipeline_class(self) -> type:
-        return diffusers.WanVideoToVideoPipeline
+        return diffusers.WanAnimatePipeline
 
     def validate_before_node_run(self) -> list[Exception] | None:
         errors = []
@@ -48,13 +47,12 @@ class WanVideoToVideoPipelineParameters(DiffusionPipelineTypePipelineParameters)
 
         return errors or None
 
-    def build_pipeline(self) -> diffusers.WanVideoToVideoPipeline:
+    def build_pipeline(self) -> diffusers.WanAnimatePipeline:
         repo_id, revision = self._model_repo_parameter.get_repo_revision()
         # Use float32 instead of bfloat16 as a workaround for diffusers bug:
-        # WanVideoToVideoPipeline hardcodes video preprocessing to float32,
+        # WanAnimatePipeline hardcodes video preprocessing to float32,
         # causing dtype mismatch when VAE is in bfloat16.
-        # See: https://github.com/huggingface/diffusers/issues/XXXX
-        return diffusers.WanVideoToVideoPipeline.from_pretrained(
+        return diffusers.WanAnimatePipeline.from_pretrained(
             pretrained_model_name_or_path=repo_id,
             revision=revision,
             torch_dtype=torch.float32,
