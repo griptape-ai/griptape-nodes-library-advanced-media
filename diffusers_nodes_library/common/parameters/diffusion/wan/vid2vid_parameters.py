@@ -50,9 +50,13 @@ class WanVideoToVideoPipelineParameters(DiffusionPipelineTypePipelineParameters)
 
     def build_pipeline(self) -> diffusers.WanVideoToVideoPipeline:
         repo_id, revision = self._model_repo_parameter.get_repo_revision()
+        # Use float32 instead of bfloat16 as a workaround for diffusers bug:
+        # WanVideoToVideoPipeline hardcodes video preprocessing to float32,
+        # causing dtype mismatch when VAE is in bfloat16.
+        # See: https://github.com/huggingface/diffusers/issues/XXXX
         return diffusers.WanVideoToVideoPipeline.from_pretrained(
             pretrained_model_name_or_path=repo_id,
             revision=revision,
-            torch_dtype=torch.bfloat16,
+            torch_dtype=torch.float32,
             local_files_only=True,
         )
