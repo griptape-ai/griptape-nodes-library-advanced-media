@@ -15,6 +15,9 @@ from diffusers_nodes_library.common.parameters.diffusion.wan.vace_parameters imp
 from diffusers_nodes_library.common.parameters.diffusion.wan.vid2vid_parameters import (
     WanVideoToVideoPipelineParameters,
 )
+from diffusers_nodes_library.common.parameters.diffusion.wan.wan_animate_parameters import (
+    WanAnimatePipelineParameters,
+)
 from diffusers_nodes_library.common.parameters.diffusion.wan.wan_parameters import (
     WanPipelineParameters,
 )
@@ -24,6 +27,7 @@ logger = logging.getLogger("diffusers_nodes_library")
 
 WanPipelineTypeDict: dict[str, type[DiffusionPipelineTypePipelineParameters]] = {
     "WanPipeline": WanPipelineParameters,
+    "WanAnimatePipeline": WanAnimatePipelineParameters,
     "WanImageToVideoPipeline": WanImageToVideoPipelineParameters,
     "WanVideoToVideoPipeline": WanVideoToVideoPipelineParameters,
     "WanVacePipeline": WanVacePipelineParameters,
