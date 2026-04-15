@@ -13,8 +13,8 @@ from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.files.project_file import ProjectFileDestination
 from PIL import Image  # type: ignore[reportMissingImports]
 
-from diffusers_nodes_library.common.parameters.diffusion.runtime_parameters import (
-    DiffusionPipelineRuntimeParameters,
+from diffusers_nodes_library.common.parameters.diffusion.wan.base_runtime_parameters import (
+    WanVideoPipelineRuntimeParametersBase,
 )
 from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
     image_artifact_to_pil,
@@ -23,7 +23,7 @@ from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
 logger = logging.getLogger("diffusers_nodes_library")
 
 
-class WanAnimatePipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
+class WanAnimatePipelineRuntimeParameters(WanVideoPipelineRuntimeParametersBase):
     def __init__(self, node: BaseNode):
         super().__init__(node)
 
@@ -97,10 +97,10 @@ class WanAnimatePipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
         )
         self._node.add_parameter(
             Parameter(
-                name="num_frames",
-                default_value=81,
+                name="segment_frame_length",
+                default_value=77,
                 type="int",
-                tooltip="Number of frames to generate",
+                tooltip="Number of frames per video segment (total frames determined by pose_video length)",
             )
         )
         self._node.add_parameter(
@@ -131,7 +131,7 @@ class WanAnimatePipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
         self._node.remove_parameter_element_by_name("prompt")
         self._node.remove_parameter_element_by_name("negative_prompt")
         self._node.remove_parameter_element_by_name("mode")
-        self._node.remove_parameter_element_by_name("num_frames")
+        self._node.remove_parameter_element_by_name("segment_frame_length")
         self._node.remove_parameter_element_by_name("guidance_scale")
 
     def remove_output_parameters(self) -> None:
@@ -147,9 +147,8 @@ class WanAnimatePipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
             "prompt": self._node.get_parameter_value("prompt"),
             "negative_prompt": self._node.get_parameter_value("negative_prompt"),
             "mode": self._node.get_parameter_value("mode"),
-            "num_frames": self.get_num_frames(),
+            "segment_frame_length": self.get_segment_frame_length(),
             "guidance_scale": self._node.get_parameter_value("guidance_scale"),
-            "output_type": "pil",
         }
 
     def validate_before_node_run(self) -> list[Exception] | None:
@@ -178,8 +177,8 @@ class WanAnimatePipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
 
         return errors or None
 
-    def get_num_frames(self) -> int:
-        return int(self._node.get_parameter_value("num_frames"))
+    def get_segment_frame_length(self) -> int:
+        return int(self._node.get_parameter_value("segment_frame_length"))
 
     def get_input_image(self) -> ImageUrlArtifact | None:
         return self._node.get_parameter_value("image")
