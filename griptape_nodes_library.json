@@ -1,6 +1,6 @@
 {
     "name": "Griptape Nodes Advanced Media Library",
-    "library_schema_version": "0.4.0",
+    "library_schema_version": "0.6.0",
     "settings": [
         {
             "description": "Configuration settings for the Advanced Media Library temporary file storage",
@@ -91,6 +91,19 @@
                 "category": "image/depth",
                 "description": "Generate a Depth Map with Depth Anything V2 and \ud83e\udd17 Transformers Pairs well with ControlNet Image Generation in depth mode.",
                 "display_name": "Depth Anything V2 Image"
+            }
+        },
+        {
+            "class_name": "YOLOv8FaceDetection",
+            "file_path": "ultralytics_nodes_library/yolov8_face_detection.py",
+            "metadata": {
+                "category": "image/detection",
+                "description": "DEPRECATED: moved to https://github.com/griptape-ai/griptape-nodes-library-ultralytics. Install that library and re-add the node from there. This stub will be removed in advanced-media v0.72.0.",
+                "display_name": "YOLOv8 Face Detection",
+                "deprecation": {
+                    "deprecation_message": "Moved to https://github.com/griptape-ai/griptape-nodes-library-ultralytics. Install that library and re-add the node from there.",
+                    "removal_version": "0.72.0"
+                }
             }
         },
         {
