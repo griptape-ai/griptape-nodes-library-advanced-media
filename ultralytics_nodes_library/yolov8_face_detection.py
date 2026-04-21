@@ -1,38 +1,44 @@
-import io
 import logging
-from dataclasses import dataclass
 from typing import Any
 
-import PIL.Image
-from griptape.artifacts import ImageUrlArtifact
-from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
-from griptape_nodes.exe_types.node_types import AsyncResult, ControlNode, NodeResolutionState
-from supervision import Detections  # type: ignore[import-untyped]
-
-from diffusers_nodes_library.common.utils.huggingface_utils import model_cache
-from ultralytics_nodes_library.yolov8_face_detection_parameters import (
-    YOLOv8FaceDetectionParameters,
+from griptape_nodes.exe_types.core_types import (
+    DeprecationMessage,
+    NodeMessageResult,
+    Parameter,
+    ParameterMode,
 )
-from utils.image_utils import load_image_from_url_artifact
+from griptape_nodes.exe_types.node_types import ControlNode
+from griptape_nodes.retained_mode.retained_mode import RetainedMode as cmd  # noqa: N813
+from griptape_nodes.traits.button import ButtonDetailsMessagePayload
 
 logger = logging.getLogger("ultralytics_nodes_library")
 
-
-@dataclass
-class BoundingBox:
-    """Represents a bounding box with position and dimensions."""
-
-    x: int
-    y: int
-    width: int
-    height: int
+_NEW_LIBRARY_NAME = "Griptape Nodes Ultralytics Library"
+_NEW_LIBRARY_URL = "https://github.com/griptape-ai/griptape-nodes-library-ultralytics"
+_MIGRATION_MESSAGE = (
+    "This node has moved to a separate library.\n"
+    f"Install {_NEW_LIBRARY_NAME} from {_NEW_LIBRARY_URL} "
+    "and click the button to migrate this node and its connections. "
+    "This stub will be removed in advanced-media v0.72.0."
+)
 
 
 class YOLOv8FaceDetection(ControlNode):
+    """Deprecated stub. The real implementation moved to griptape-nodes-library-ultralytics.
+
+    Parameters are preserved so `migrate_parameter` can rewire existing connections onto
+    the replacement node. Running this node raises RuntimeError.
+    """
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.params = YOLOv8FaceDetectionParameters(self)
-        self.params.add_input_parameters()
+
+        self.migrate_message = DeprecationMessage(
+            value=_MIGRATION_MESSAGE,
+            button_text="Create YOLOv8 Face Detection Node",
+            migrate_function=self._migrate,
+        )
+        self.add_node_element(self.migrate_message)
 
         self.add_parameter(
             Parameter(
@@ -42,7 +48,24 @@ class YOLOv8FaceDetection(ControlNode):
                 tooltip="Input image for face detection",
             )
         )
-
+        self.add_parameter(
+            Parameter(
+                name="confidence_threshold",
+                default_value=0.5,
+                input_types=["float"],
+                type="float",
+                tooltip="Minimum confidence score for a detection to be kept",
+            )
+        )
+        self.add_parameter(
+            Parameter(
+                name="dilation",
+                default_value=0.0,
+                input_types=["float"],
+                type="float",
+                tooltip="Percentage to expand detected bounding boxes",
+            )
+        )
         self.add_parameter(
             Parameter(
                 name="detected_faces",
@@ -53,133 +76,37 @@ class YOLOv8FaceDetection(ControlNode):
             )
         )
 
-        self.params.add_logs_output_parameter()
+    def _migrate(self, button: Any, button_details: ButtonDetailsMessagePayload) -> NodeMessageResult | None:  # noqa: ARG002
+        new_node_name = f"{self.name}_migrated"
 
-    @property
-    def state(self) -> NodeResolutionState:
-        """Overrides BaseNode.state @property to compute state based on model's existence in model_cache, ensuring model rebuild if missing."""
-        if self._state == NodeResolutionState.RESOLVED and not model_cache.has_pipeline(self.params.get_cache_key()):
-            logger.debug("Model not found in cache, marking node as UNRESOLVED")
-            return NodeResolutionState.UNRESOLVED
-        return super().state
-
-    @state.setter
-    def state(self, new_state: NodeResolutionState) -> None:
-        self._state = new_state
-
-    def validate_before_node_run(self) -> list[Exception] | None:
-        errors = self.params.validate_before_node_run()
-
-        if not self.get_parameter_value("input_image"):
-            if errors is None:
-                errors = []
-            errors.append(Exception("No input image provided"))
-
-        return errors or None
-
-    def _dilate_bbox(self, bbox: BoundingBox, dilation_percent: float, img_width: int, img_height: int) -> BoundingBox:
-        """Dilate bounding box by percentage while keeping it centered.
-
-        Args:
-            bbox: Original bounding box
-            dilation_percent: Percentage to expand (e.g., 10 for 10%)
-            img_width: Image width for boundary clamping
-            img_height: Image height for boundary clamping
-
-        Returns:
-            New BoundingBox with dilated dimensions
-        """
-        # Calculate dilation factor (e.g., 10% -> 1.10)
-        dilation_factor = 1.0 + (dilation_percent / 100.0)
-
-        # Calculate new dimensions
-        new_width = int(bbox.width * dilation_factor)
-        new_height = int(bbox.height * dilation_factor)
-
-        # Calculate offsets to keep box centered
-        width_offset = (new_width - bbox.width) // 2
-        height_offset = (new_height - bbox.height) // 2
-
-        # Calculate new position
-        new_x = bbox.x - width_offset
-        new_y = bbox.y - height_offset
-
-        # Clamp to image boundaries
-        new_x = max(0, min(new_x, img_width - new_width))
-        new_y = max(0, min(new_y, img_height - new_height))
-
-        # Ensure width and height don't exceed image boundaries
-        new_width = min(new_width, img_width - new_x)
-        new_height = min(new_height, img_height - new_y)
-
-        return BoundingBox(x=new_x, y=new_y, width=new_width, height=new_height)
-
-    def process(self) -> AsyncResult | None:
-        self.params.log_params.append_to_logs("Loading YOLOv8 face detection model...\n")
-
-        cache_key = self.params.get_cache_key()
-        builder = self.params.get_model_builder()
-
-        with self.params.log_params.append_profile_to_logs("Loading model"):
-            model = yield lambda: model_cache.get_or_build_pipeline(cache_key, builder)
-
-        yield lambda: self._process(model)
-
-    def _process(self, model: Any) -> AsyncResult | None:
-        input_image_artifact = self.get_parameter_value("input_image")
-
-        # Convert ImageUrlArtifact to ImageArtifact if needed
-        if isinstance(input_image_artifact, ImageUrlArtifact):
-            input_image_artifact = load_image_from_url_artifact(input_image_artifact)
-
-        # Use BytesIO pattern to load PIL image
-        input_image_pil = PIL.Image.open(io.BytesIO(input_image_artifact.value))
-        input_image_pil = input_image_pil.convert("RGB")
-
-        # Get parameters
-        confidence_threshold = float(self.get_parameter_value("confidence_threshold") or 0.5)
-        dilation = float(self.get_parameter_value("dilation") or 0.0)
-
-        self.params.log_params.append_to_logs(
-            f"Running face detection (confidence threshold: {confidence_threshold})...\n"
+        new_node_result = cmd.create_node_relative_to(
+            reference_node_name=self.name,
+            new_node_type="YOLOv8FaceDetection",
+            new_node_name=new_node_name,
+            specific_library_name=_NEW_LIBRARY_NAME,
+            offset_side="top_right",
+            offset_y=-50,
+            swap=True,
+            match_size=True,
         )
 
-        # Run YOLO inference
-        results = model(input_image_pil)
+        if isinstance(new_node_result, str):
+            new_node = new_node_result
+        else:
+            logger.error("Failed to create node: %s", new_node_result)
+            return None
 
-        # Parse results using supervision
-        detections = Detections.from_ultralytics(results[0])
+        cmd.migrate_parameter(self.name, new_node, "exec_in", "exec_in")
+        cmd.migrate_parameter(self.name, new_node, "exec_out", "exec_out")
+        cmd.migrate_parameter(self.name, new_node, "input_image", "input_image")
+        cmd.migrate_parameter(self.name, new_node, "confidence_threshold", "confidence_threshold")
+        cmd.migrate_parameter(self.name, new_node, "dilation", "dilation")
+        cmd.migrate_parameter(self.name, new_node, "detected_faces", "detected_faces")
 
-        # Get image dimensions for boundary clamping
-        img_width, img_height = input_image_pil.size
+        return None
 
-        # Filter by confidence threshold and convert to output format
-        detected_faces = []
-        for i in range(len(detections)):
-            confidence = float(detections.confidence[i])
-            if confidence >= confidence_threshold:
-                # Get bounding box coordinates (x1, y1, x2, y2)
-                x1, y1, x2, y2 = detections.xyxy[i]
+    def validate_before_node_run(self) -> list[Exception] | None:
+        return [RuntimeError(f"{_MIGRATION_MESSAGE} See: {_NEW_LIBRARY_URL}")]
 
-                # Convert to x, y, width, height format
-                bbox = BoundingBox(x=int(x1), y=int(y1), width=int(x2 - x1), height=int(y2 - y1))
-
-                # Apply dilation if specified
-                if dilation > 0:
-                    bbox = self._dilate_bbox(bbox, dilation, img_width, img_height)
-
-                detected_faces.append(
-                    {
-                        "x": bbox.x,
-                        "y": bbox.y,
-                        "width": bbox.width,
-                        "height": bbox.height,
-                        "confidence": float(confidence),
-                    }
-                )
-
-        self.params.log_params.append_to_logs(f"Detected {len(detected_faces)} face(s)\n")
-
-        # Set output
-        self.set_parameter_value("detected_faces", detected_faces)
-        self.parameter_output_values["detected_faces"] = detected_faces
+    def process(self) -> None:
+        raise RuntimeError(f"{_MIGRATION_MESSAGE} See: {_NEW_LIBRARY_URL}")
