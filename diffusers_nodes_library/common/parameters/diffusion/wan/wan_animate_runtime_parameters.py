@@ -202,12 +202,6 @@ class WanAnimatePipelineRuntimeParameters(WanVideoPipelineRuntimeParametersBase)
     def get_mask_video(self) -> VideoUrlArtifact | None:
         return self._node.get_parameter_value("mask_video")
 
-    def _video_artifact_to_pil_frames(self, video_artifact: VideoUrlArtifact) -> list[Image.Image]:
-        """Convert a VideoUrlArtifact to a list of PIL Image frames."""
-        if video_artifact is None:
-            return []
-        return diffusers.utils.load_video(video_artifact.value)
-
     def _get_optional_video_frames(self, video_artifact: VideoUrlArtifact | None) -> list[Image.Image] | None:
         """Convert an optional video artifact to PIL frames, returning None if not provided."""
         if video_artifact is None:

@@ -44,6 +44,21 @@ def download_video_to_temp_file(video_url_artifact: VideoUrlArtifact) -> Path:
     return temp_path
 
 
+def load_video_frames_from_url_artifact(video_url_artifact: VideoUrlArtifact) -> list:
+    """Load a VideoUrlArtifact as a list of PIL frames.
+
+    Resolves Griptape path macros (e.g. `{inputs}/foo.mp4`) and HTTP URLs via
+    `File(...)`, then decodes frames with `diffusers.utils.load_video`.
+    """
+    import diffusers.utils  # type: ignore[reportMissingImports]
+
+    temp_path = download_video_to_temp_file(video_url_artifact)
+    try:
+        return diffusers.utils.load_video(str(temp_path))
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+
 def get_video_fps(video_path: Path, default_fps: float = 30.0) -> float:
     """Get the FPS (frames per second) of a video file using OpenCV.
 

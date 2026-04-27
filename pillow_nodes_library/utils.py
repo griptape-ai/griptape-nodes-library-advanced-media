@@ -3,7 +3,6 @@ import io
 import PIL.Image
 import PIL.ImageOps
 from griptape.artifacts import ImageArtifact, ImageUrlArtifact
-from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from PIL.Image import Image
 
 
@@ -45,21 +44,6 @@ def pil_to_image_artifact(pil_image: Image, directory_path: str = "") -> ImageUr
 
     saved = dest.write_bytes(image_bytes)
     return ImageUrlArtifact(saved.location)
-
-
-def video_url_artifact_to_pil_images(video_artifact: VideoUrlArtifact) -> list[Image]:
-    """Converts VideoUrlArtifact to a list of PIL Images.
-
-    Args:
-        video_artifact: VideoUrlArtifact containing the video URL
-
-    Returns:
-        List of PIL Images, one for each frame in the video
-    """
-    import diffusers.utils  # type: ignore[reportMissingImports]
-
-    # Use diffusers' load_video utility to convert video URL to PIL frames
-    return diffusers.utils.loading_utils.load_video(video_artifact.value)
 
 
 def pad_mirror(image: Image, target_size: tuple[int, int]) -> Image:

@@ -12,6 +12,7 @@ from griptape_nodes.exe_types.param_components.project_file_parameter import Pro
 from transformers_nodes_library.depth_anything_for_depth_estimation_parameters import (
     DepthAnythingForDepthEstimationParameters,
 )
+from utils.video_utils import load_video_frames_from_url_artifact
 
 logger = logging.getLogger("diffusers_nodes_library")
 
@@ -59,8 +60,8 @@ class DepthAnythingForDepthEstimationVideo(ControlNode):
 
         self.params.log_params.append_to_logs("Loading video frames...\n")
 
-        # Load video frames using diffusers utilities
-        input_frames = diffusers.utils.load_video(input_video_artifact.value)
+        # Load video frames, resolving Griptape path macros via File(...)
+        input_frames = load_video_frames_from_url_artifact(input_video_artifact)
 
         if not input_frames:
             msg = "Could not load frames from input video"
