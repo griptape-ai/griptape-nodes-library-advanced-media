@@ -1,6 +1,5 @@
 import logging
 
-import diffusers  # type: ignore[reportMissingImports]
 from griptape.artifacts import ImageUrlArtifact
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterList, ParameterMode
@@ -189,11 +188,3 @@ class WanVacePipelineRuntimeParameters(WanVideoPipelineRuntimeParametersBase):
             pil_images.append(pil_image)
 
         return pil_images if pil_images else None
-
-    def _video_artifact_to_pil_frames(self, video_artifact: VideoUrlArtifact) -> list[Image.Image]:
-        """Convert a VideoUrlArtifact to a list of PIL Image frames."""
-        if video_artifact is None:
-            return []
-
-        # Use diffusers loading utilities to convert video URL to frames
-        return diffusers.utils.load_video(video_artifact.value)

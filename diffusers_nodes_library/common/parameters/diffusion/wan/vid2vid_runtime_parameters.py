@@ -1,11 +1,8 @@
 import logging
 from typing import Any
 
-import diffusers  # type: ignore[reportMissingImports]
-from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
-from PIL import Image  # type: ignore[reportMissingImports]
 
 from diffusers_nodes_library.common.parameters.diffusion.wan.base_runtime_parameters import (
     WanVideoPipelineRuntimeParametersBase,
@@ -110,11 +107,3 @@ class WanVideoToVideoPipelineRuntimeParameters(WanVideoPipelineRuntimeParameters
 
     def get_input_video(self) -> Any:
         return self._node.get_parameter_value("input_video")
-
-    def _video_artifact_to_pil_frames(self, video_artifact: VideoUrlArtifact) -> list[Image.Image]:
-        """Convert a VideoUrlArtifact to a list of PIL Image frames."""
-        if video_artifact is None:
-            return []
-
-        # Use diffusers loading utilities to convert video URL to frames
-        return diffusers.utils.load_video(video_artifact.value)

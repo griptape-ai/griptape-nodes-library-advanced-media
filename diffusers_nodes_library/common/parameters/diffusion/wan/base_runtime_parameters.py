@@ -13,6 +13,7 @@ from griptape_nodes.files.project_file import ProjectFileDestination
 from diffusers_nodes_library.common.parameters.diffusion.runtime_parameters import (
     DiffusionPipelineRuntimeParameters,
 )
+from utils.video_utils import load_video_frames_from_url_artifact
 
 logger = logging.getLogger("diffusers_nodes_library")
 
@@ -25,6 +26,12 @@ class WanVideoPipelineRuntimeParametersBase(DiffusionPipelineRuntimeParameters):
 
     def __init__(self, node: BaseNode):
         super().__init__(node)
+
+    def _video_artifact_to_pil_frames(self, video_artifact: VideoUrlArtifact | None) -> list[PIL.Image.Image]:
+        """Convert a VideoUrlArtifact to a list of PIL Image frames."""
+        if video_artifact is None:
+            return []
+        return load_video_frames_from_url_artifact(video_artifact)
 
     def publish_output_image_preview_placeholder(self) -> None:
         """Override to publish video placeholder instead of image placeholder."""

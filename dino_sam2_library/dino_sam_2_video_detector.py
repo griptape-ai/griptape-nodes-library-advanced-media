@@ -13,13 +13,13 @@ from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import AsyncResult, ControlNode
 from griptape_nodes.exe_types.param_components.log_parameter import LogParameter
 from griptape_nodes.exe_types.param_components.project_file_parameter import ProjectFileParameter
-from griptape_nodes.files.file import File
 from huggingface_hub import hf_hub_download  # pyright: ignore[reportMissingImports]
 from sam2.build_sam import HF_MODEL_ID_TO_FILENAMES, build_sam2_video_predictor  # type: ignore[reportMissingImports]
 
 from diffusers_nodes_library.common.utils.huggingface_utils import model_cache  # type: ignore[reportMissingImports]
 from diffusers_nodes_library.common.utils.torch_utils import get_best_device  # type: ignore[reportMissingImports]
 from dino_sam2_library.dino_sam_2_detector_parameters import DinoSam2DetectorParameters
+from utils.video_utils import download_video_to_temp_file
 
 logger = logging.getLogger("sam2_nodes_library")
 
@@ -102,15 +102,6 @@ class DinoSam2VideoDetector(ControlNode):
         )
         self._output_video_file.add_parameter()
 
-    def get_video_mp4(self) -> str:
-        """Get the input video as a URL."""
-        url = self.get_parameter_value("input_video").value
-        return url
-
-    def get_video_frames_pil(self) -> list[PIL.Image.Image]:
-        """Get the input video frames as a list of PIL Image objects."""
-        return diffusers.utils.load_video(self.get_video_mp4())
-
     def get_prompt(self) -> str:
         """Get the prompt text for object detection."""
         # DINO prompt must be lower case.
@@ -132,6 +123,15 @@ class DinoSam2VideoDetector(ControlNode):
         yield lambda: self._process()
 
     def _process(self) -> AsyncResult | None:  # noqa: PLR0915, C901, PLR0912
+        # `download_video_to_temp_file` expands Griptape path macros
+        # (e.g. `{inputs}/foo.mp4`) and handles HTTP URLs.
+        local_video_path = download_video_to_temp_file(self.get_parameter_value("input_video"))
+        try:
+            return self._run(local_video_path)
+        finally:
+            local_video_path.unlink(missing_ok=True)
+
+    def _run(self, local_video_path: Path) -> AsyncResult | None:  # noqa: PLR0915, C901, PLR0912
         self.log_params.append_to_logs("Preparing models...\n")
 
         # -------------------------------------------------------------
@@ -182,7 +182,7 @@ class DinoSam2VideoDetector(ControlNode):
             self.log_params.append_logs_to_logs(logger=logger),
         ):
             # Load video frames
-            frames = self.get_video_frames_pil()
+            frames = diffusers.utils.load_video(str(local_video_path))
             self.log_params.append_to_logs(f"Loaded {len(frames)} frames\n")
 
             # Convert PIL frames to numpy arrays for SAM2
@@ -235,9 +235,8 @@ class DinoSam2VideoDetector(ControlNode):
         with tempfile.TemporaryDirectory() as tmp_dir:
             video_path = Path(tmp_dir) / "input_video.mp4"
 
-            # 1. Download the video
-            video_data = File(self.get_video_mp4()).read_bytes()
-            Path(video_path).write_bytes(video_data)
+            # 1. Copy the already-resolved video into the tmp dir
+            Path(video_path).write_bytes(local_video_path.read_bytes())
 
             # 2. Create output folder for frames
             frame_dir = Path(tmp_dir) / "frames"
