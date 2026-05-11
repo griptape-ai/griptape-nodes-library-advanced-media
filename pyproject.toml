@@ -56,7 +56,6 @@ packages = [
     "pillow_nodes_library",
     "spandrel_nodes_library",
     "transformers_nodes_library",
-    "ultralytics_nodes_library",
     "utils",
     "workflows",
 ]
