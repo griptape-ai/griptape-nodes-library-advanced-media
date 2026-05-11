@@ -94,19 +94,6 @@
       }
     },
     {
-      "class_name": "YOLOv8FaceDetection",
-      "file_path": "ultralytics_nodes_library/yolov8_face_detection.py",
-      "metadata": {
-        "category": "image/detection",
-        "description": "DEPRECATED: moved to https://github.com/griptape-ai/griptape-nodes-library-ultralytics. Install that library and re-add the node from there. This stub will be removed in advanced-media v0.72.0.",
-        "display_name": "YOLOv8 Face Detection",
-        "deprecation": {
-          "deprecation_message": "Moved to https://github.com/griptape-ai/griptape-nodes-library-ultralytics. Install that library and re-add the node from there.",
-          "removal_version": "0.72.0"
-        }
-      }
-    },
-    {
       "class_name": "OpenPoseImageDetection",
       "file_path": "openpose_nodes_library/openpose_image_detection.py",
       "metadata": {
