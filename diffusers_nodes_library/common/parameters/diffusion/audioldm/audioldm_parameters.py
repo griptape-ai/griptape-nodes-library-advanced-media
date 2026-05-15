@@ -19,7 +19,6 @@ class AudioldmPipelineParameters(DiffusionPipelineTypePipelineParameters):
             node,
             repo_ids=[
                 "cvssp/audioldm-s-full-v2",
-                "cvssp/audioldm-s-full",
                 "cvssp/audioldm-m-full",
                 "cvssp/audioldm-l-full",
             ],
