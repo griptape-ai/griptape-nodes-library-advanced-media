@@ -35,20 +35,30 @@ class HuggingFacePipelineParameter:
 
     def add_input_parameters(self) -> None:
         memory_optimization_strategy_choices = ["Manual", "Automatic"]
-        self._node.add_parameter(
-            Parameter(
-                name="memory_optimization_strategy",
-                default_value=memory_optimization_strategy_choices[0],
-                type="str",
-                traits={
-                    Options(
-                        choices=memory_optimization_strategy_choices,
-                    )
-                },
-                allowed_modes={ParameterMode.PROPERTY},
-                tooltip="Memory Optimization Strategy",
-            )
+        memory_optimization_strategy_param = Parameter(
+            name="memory_optimization_strategy",
+            default_value=memory_optimization_strategy_choices[0],
+            type="str",
+            traits={
+                Options(
+                    choices=memory_optimization_strategy_choices,
+                )
+            },
+            allowed_modes={ParameterMode.PROPERTY},
+            tooltip="Memory Optimization Strategy",
         )
+        memory_optimization_strategy_param.set_badge(
+            variant="help",
+            title="Memory optimization help",
+            message=(
+                "**Manual** exposes per-knob toggles (attention slicing, VAE slicing, layerwise casting, "
+                "CPU offload, quantization). **Automatic** lets Griptape pick reasonable defaults for you.\n\n"
+                "Not sure which knob does what? See "
+                "[Manual Memory Settings](https://docs.griptapenodes.com/latest/nodes/advanced_media_library/diffusion_pipelines/#manual-memory-settings) "
+                "for guidance on when to enable each option."
+            ),
+        )
+        self._node.add_parameter(memory_optimization_strategy_param)
         self._node.add_parameter(
             Parameter(
                 name="attention_slicing",
