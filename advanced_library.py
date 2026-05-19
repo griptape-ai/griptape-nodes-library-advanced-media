@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("advanced_media_library")
 
-_TORCH_PACKAGES = ("torch", "torchvision", "torchaudio")
+_TORCH_PACKAGES = ("torch", "torchvision", "torchaudio", "transformers", "diffusers")
 
 
 def _log_torch_state(label: str) -> None:
@@ -42,14 +42,20 @@ def _claim_torch_for_this_venv() -> None:
     """Import torch (and friends) FIRST so they resolve from this library's venv.
 
     `_add_library_paths_to_sys_path` has already prepended this library's venv
-    site-packages to `sys.path`. Importing torch here pins
-    `sys.modules['torch']` to this venv's torch before any node module runs.
+    site-packages to `sys.path`. Importing the heavy ML packages here pins
+    `sys.modules[pkg]` to this venv's copy before any node module runs.
+    `transformers` and `diffusers` are included because they are the ones that
+    actually trigger the torch.nn.attention.flex_attention imports, and a
+    different library's venv can otherwise install a newer transformers that
+    expects symbols not present in this venv's pinned torch.
     """
     _log_torch_state("before-claim")
 
     import torch  # noqa: F401  pyright: ignore[reportMissingImports]
     import torchvision  # noqa: F401  pyright: ignore[reportMissingImports]
     import torchaudio  # noqa: F401  pyright: ignore[reportMissingImports]
+    import transformers  # noqa: F401  pyright: ignore[reportMissingImports]
+    import diffusers  # noqa: F401  pyright: ignore[reportMissingImports]
 
     _log_torch_state("after-claim")
 
