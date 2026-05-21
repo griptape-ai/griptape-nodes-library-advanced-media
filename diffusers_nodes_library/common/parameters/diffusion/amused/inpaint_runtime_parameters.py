@@ -8,8 +8,8 @@ from griptape_nodes.exe_types.core_types import Parameter
 from griptape_nodes.exe_types.node_types import BaseNode
 from PIL.Image import Image
 
-from diffusers_nodes_library.common.parameters.diffusion.runtime_parameters import (
-    DiffusionPipelineRuntimeParameters,
+from diffusers_nodes_library.common.parameters.diffusion.amused.base_runtime_parameters import (
+    AmusedPipelineRuntimeParametersBase,
 )
 from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
     image_artifact_to_pil,
@@ -19,7 +19,7 @@ from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
 logger = logging.getLogger("diffusers_nodes_library")
 
 
-class AmusedInpaintPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
+class AmusedInpaintPipelineRuntimeParameters(AmusedPipelineRuntimeParametersBase):
     """Runtime parameters for AmusedInpaintPipeline."""
 
     def __init__(self, node: BaseNode):
