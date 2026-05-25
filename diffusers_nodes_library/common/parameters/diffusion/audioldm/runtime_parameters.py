@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 
+import torch  # type: ignore[reportMissingImports]
 from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
@@ -10,6 +11,7 @@ from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_para
 
 from artifact_utils.audio_utils import dict_to_audio_url_artifact  # type: ignore[reportMissingImports]
 from diffusers_nodes_library.common.parameters.diffusion.runtime_parameters import (
+    DEFAULT_NUM_INFERENCE_STEPS,
     DiffusionPipelineRuntimeParameters,
 )
 
@@ -64,6 +66,19 @@ class AudioldmPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
             )
         )
 
+    def add_input_parameters(self) -> None:
+        self._add_input_parameters()
+        # Add num_inference_steps parameter (no width/height for audio)
+        self._node.add_parameter(
+            Parameter(
+                name="num_inference_steps",
+                default_value=DEFAULT_NUM_INFERENCE_STEPS,
+                type="int",
+                tooltip="Number of denoising steps for generation",
+            )
+        )
+        self._seed_parameter.add_input_parameters()
+
     def add_output_parameters(self) -> None:
         self._node.add_parameter(
             Parameter(
@@ -80,6 +95,12 @@ class AudioldmPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
         self._node.remove_parameter_element_by_name("negative_prompt")
         self._node.remove_parameter_element_by_name("audio_length_in_s")
         self._node.remove_parameter_element_by_name("guidance_scale")
+
+    def remove_input_parameters(self) -> None:
+        # Remove num_inference_steps (no width/height for audio)
+        self._node.remove_parameter_element_by_name("num_inference_steps")
+        self._seed_parameter.remove_input_parameters()
+        self._remove_input_parameters()
 
     def remove_output_parameters(self) -> None:
         self._node.remove_parameter_element_by_name("output_audio")
@@ -121,6 +142,16 @@ class AudioldmPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
             kwargs["negative_prompt"] = negative_prompt
 
         return kwargs
+
+    def get_pipe_kwargs(self) -> dict:
+        return {
+            **self._get_pipe_kwargs(),
+            "num_inference_steps": self.get_num_inference_steps(),
+            "generator": torch.Generator().manual_seed(self._seed_parameter.get_seed()),
+        }
+
+    def publish_output_image_preview_placeholder(self) -> None:
+        """No-op: AudioLDM produces audio, not image, so no image placeholder is published."""
 
     def process_pipeline(self, pipe: DiffusionPipeline) -> None:
         """Override to handle audio generation instead of image generation."""
