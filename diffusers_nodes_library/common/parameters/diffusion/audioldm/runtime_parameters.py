@@ -1,3 +1,4 @@
+import inspect
 import logging
 from typing import Any
 
@@ -154,33 +155,44 @@ class AudioldmPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
         """No-op: AudioLDM produces audio, not image, so no image placeholder is published."""
 
     def process_pipeline(self, pipe: DiffusionPipeline) -> None:
-        """Override to handle audio generation instead of image generation."""
+        """Override to handle audio generation instead of image generation.
+
+        AudioLDMPipeline.__call__ exposes the legacy ``callback(step, timestep,
+        latents)`` / ``callback_steps`` API and does not accept
+        ``callback_on_step_end``. Adapt to the legacy signature and drop any
+        kwargs the pipeline doesn't accept.
+        """
         num_inference_steps = self.get_num_inference_steps()
 
-        def callback_on_step_end(
+        def on_step_end(
             pipe: DiffusionPipeline,
             i: int,
-            _t: Any,
             callback_kwargs: dict,
-        ) -> dict:
+        ) -> None:
             # Check for cancellation request
             if self._node.is_cancellation_requested:
                 pipe._interrupt = True
                 self._node.log_params.append_to_logs("Cancellation requested, stopping after this step...\n")  # type: ignore[reportAttributeAccessIssue]
-                return callback_kwargs
+                return
 
             if i < num_inference_steps - 1:
                 self.publish_output_audio_preview(pipe, callback_kwargs["latents"])
                 self._node.log_params.append_to_logs(f"Starting inference step {i + 2} of {num_inference_steps}...\n")  # type: ignore[reportAttributeAccessIssue]
                 self._node.progress_bar_component.increment()  # type: ignore[reportAttributeAccessIssue]
-            return {}
+
+        def legacy_callback(i: int, _t: int, latents: torch.Tensor) -> None:
+            on_step_end(pipe, i, {"latents": latents})
+
+        accepted = set(inspect.signature(pipe.__call__).parameters)
+        kwargs = {k: v for k, v in self.get_pipe_kwargs().items() if k in accepted}
 
         self._node.log_params.append_to_logs(f"Starting inference step 1 of {num_inference_steps}...\n")  # type: ignore[reportAttributeAccessIssue]
         self._node.progress_bar_component.initialize(num_inference_steps)  # type: ignore[reportAttributeAccessIssue]
         self._node.progress_bar_component.increment()  # type: ignore[reportAttributeAccessIssue]
         result = pipe(  # type: ignore[reportCallIssue]
-            **self.get_pipe_kwargs(),
-            callback_on_step_end=callback_on_step_end,
+            **kwargs,
+            callback=legacy_callback,
+            callback_steps=1,
         )
 
         # AudioLDM returns audio data directly
