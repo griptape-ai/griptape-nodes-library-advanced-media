@@ -8,20 +8,43 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.RELEASE_PAT }}
 
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Bump minor version
-        run: make version/minor
+      - name: Bump minor version on a branch
+        id: bump
+        run: |
+          git checkout -b bump-tmp
+          make version/minor
+          VERSION=$(make version/get)
+          BRANCH="chore/bump-v${VERSION}"
+          git push origin "HEAD:refs/heads/${BRANCH}" --force
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "branch=${BRANCH}" >> "$GITHUB_OUTPUT"
 
-      - name: Push changes
-        run: git push
+      - name: Open pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }}
+        run: |
+          if [ "$(gh pr list --base main --head '${{ steps.bump.outputs.branch }}' --json number --jq length)" = "0" ]; then
+            gh pr create --base main --head "${{ steps.bump.outputs.branch }}" \
+              --title "chore: bump v${{ steps.bump.outputs.version }}" \
+              --body "Automated minor version bump to \`v${{ steps.bump.outputs.version }}\`."
+          fi
+
+      - name: Enable auto-merge
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }}
+        run: gh pr merge --auto --squash "${{ steps.bump.outputs.branch }}"
