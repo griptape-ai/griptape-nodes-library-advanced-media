@@ -8,10 +8,11 @@ authors = [
 requires-python = "~=3.12.0"
 dependencies = [
     "accelerate>=1.6.0",
+    "av>=14.0.0",
     "beautifulsoup4>=4.13.4",
     "controlnet-aux>=0.0.9",
     "static-ffmpeg>=2.8",
-    "diffusers @ https://github.com/huggingface/diffusers/archive/9884ed2343f3545c5d38c7759e5cdf43836bd793.zip",
+    "diffusers==0.39.0",
     "imageio[ffmpeg]>=2.37.2",
     "ninja>=1.13.0",
     "numpy>=2.2.4",
@@ -20,11 +21,13 @@ dependencies = [
     "pillow>=11.2.1",
     "sentencepiece>=0.2.0",
     "cmake==3.31.6",
+    "safetensors>=0.8.0rc0",
     "spandrel>=0.4.1",
     "torch==2.7.0",
     "torchvision==0.22.0",
     "torchaudio==2.7.0",
-    "transformers @ https://github.com/huggingface/transformers/archive/136c621c00b2536d1f608ed3c6de59b9897afbb8.zip",
+    "transformers==5.13.0",
+    "tokenizers>=0.22.0,<0.23",
     "tqdm>=4.67.1",
     "optimum-quanto>=0.2.7",
     "protobuf>=6.31.0",
@@ -59,6 +62,24 @@ packages = [
     "utils",
     "workflows",
 ]
+
+# `uv sync` equivalent of the JSON's `--torch-backend=auto`: pull CUDA torch
+# wheels on Windows/Linux, fall back to PyPI (MPS build) on macOS.
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu128", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+torchvision = [
+    { index = "pytorch-cu128", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+torchaudio = [
+    { index = "pytorch-cu128", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
 
 [tool.ruff]
 line-length = 120
