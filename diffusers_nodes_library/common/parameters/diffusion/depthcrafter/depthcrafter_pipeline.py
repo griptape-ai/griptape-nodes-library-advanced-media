@@ -18,15 +18,21 @@ logger = logging.getLogger("diffusers_nodes_library")
 MAX_CUDA_TENSOR_ELEMENTS = 2**31 - 1
 
 
-def _frames_per_chunk(elements_per_frame: int) -> int:
+def _frames_per_chunk(elements_per_frame: int, upcast_factor: int = 1) -> int:
     """Max frames per chunk that keep a tensor under the 32-bit CUDA index limit.
 
     CUDA kernels index tensors with 32-bit math, so a single tensor must hold
     <= 2**31 - 1 elements. Budget half the limit to leave headroom for kernel
     intermediates larger than the chunk itself (e.g. the reflect-padded buffer
     inside the antialiased resize).
+
+    :param upcast_factor: dtype growth the chunk undergoes before the kernel runs
+        (e.g. 2 when fp16 frames are upcast to fp32 via .float()). The index limit
+        is dtype-independent, but the upcast doubles the bytes resident on device,
+        so shrinking the chunk by the same factor keeps the memory envelope at
+        bug scale from ballooning past what the index budget alone would suggest.
     """
-    return max(1, (MAX_CUDA_TENSOR_ELEMENTS // 2) // elements_per_frame)
+    return max(1, (MAX_CUDA_TENSOR_ELEMENTS // (2 * upcast_factor)) // elements_per_frame)
 
 
 class DepthCrafterVideoDiffusionPipeline(diffusers.StableVideoDiffusionPipeline):
@@ -53,8 +59,11 @@ class DepthCrafterVideoDiffusionPipeline(diffusers.StableVideoDiffusionPipeline)
         :return: image_embeddings in shape of [b, 1024]
         """
         # Chunk the resize to avoid exceeding 32-bit index limits on high-res, long videos.
+        # The .float() below doubles each chunk's bytes when the video is fp16, so
+        # budget the chunk for the upcast dtype, not the storage dtype.
+        upcast_factor = max(1, torch.float32.itemsize // video.dtype.itemsize)
         elements_per_frame = video.shape[1] * video.shape[2] * video.shape[3]
-        resize_chunk_size = _frames_per_chunk(elements_per_frame)
+        resize_chunk_size = _frames_per_chunk(elements_per_frame, upcast_factor=upcast_factor)
 
         resized_chunks = []
         for i in range(0, video.shape[0], resize_chunk_size):
@@ -89,8 +98,13 @@ class DepthCrafterVideoDiffusionPipeline(diffusers.StableVideoDiffusionPipeline)
         :param chunk_size: the chunk size to encode video
         :return: vae latents in shape of [b, c, h, w]
         """
+        # Cast per-chunk rather than upcasting the whole video at once: with VAE
+        # force_upcast a full-length high-res video in fp32 is a single multi-GiB
+        # allocation (e.g. 370x3x1088x1920 fp32 = 8.6 GiB) that OOMs long before
+        # the encode itself would.
         video_latents = [
-            self.vae.encode(video[i : i + chunk_size]).latent_dist.mode() for i in range(0, video.shape[0], chunk_size)
+            self.vae.encode(video[i : i + chunk_size].to(self.vae.dtype)).latent_dist.mode()
+            for i in range(0, video.shape[0], chunk_size)
         ]
         video_latents = torch.cat(video_latents, dim=0)
         return video_latents
@@ -216,10 +230,18 @@ class DepthCrafterVideoDiffusionPipeline(diffusers.StableVideoDiffusionPipeline)
         if needs_upcasting:
             self.vae.to(dtype=torch.float32)
 
+        # Dtype cast happens per-chunk inside encode_vae_video; passing the fp16
+        # video avoids materializing a full-length fp32 copy up front.
         video_latents = self.encode_vae_video(
-            video.to(self.vae.dtype),  # pyright: ignore[reportAttributeAccessIssue]
+            video,
             chunk_size=decode_chunk_size,
         ).unsqueeze(0)  # [1, t, c, h, w]
+
+        # The full-resolution video is no longer needed (denoising works on
+        # video_latents/video_embeddings); at high res and frame counts it is
+        # multiple GiB that would otherwise sit resident through the whole
+        # denoising loop.
+        del video
 
         if track_time:
             assert encode_event is not None  # noqa: S101
