@@ -13,6 +13,9 @@ from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.files.project_file import ProjectFileDestination
 from PIL import Image
 
+from diffusers_nodes_library.common.parameters.diffusion.depthcrafter.depthcrafter_pipeline import (
+    MAX_CUDA_TENSOR_ELEMENTS,
+)
 from diffusers_nodes_library.common.parameters.diffusion.runtime_parameters import (
     DiffusionPipelineRuntimeParameters,
 )
@@ -289,12 +292,24 @@ class DepthCrafterPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
                 f"Resizing output from {width}x{height} back to {orig_width}x{orig_height}\n"
             )
             depth_tensor = depth_frames.permute(0, 3, 1, 2)  # [B, C, H, W]
-            depth_tensor = torch.nn.functional.interpolate(
-                depth_tensor,
-                size=(orig_height, orig_width),
-                mode="bilinear",
-                align_corners=False,
-            )
+            # Interpolate in frame chunks: the upsample CUDA kernel requires both its
+            # input and output tensors to fit 32-bit indexing (2^31 - 1 elements), and
+            # a full-length high-res video exceeds that. Halve the budget for headroom
+            # on kernel intermediates. Each frame resizes independently, so chunking
+            # along the frame axis is exact.
+            channels = depth_tensor.shape[1]
+            elements_per_frame = channels * max(height * width, orig_height * orig_width)
+            chunk_frames = max(1, (MAX_CUDA_TENSOR_ELEMENTS // 2) // elements_per_frame)
+            resized_chunks = []
+            for i in range(0, depth_tensor.shape[0], chunk_frames):
+                resized_chunk = torch.nn.functional.interpolate(
+                    depth_tensor[i : i + chunk_frames],
+                    size=(orig_height, orig_width),
+                    mode="bilinear",
+                    align_corners=False,
+                )
+                resized_chunks.append(resized_chunk)
+            depth_tensor = torch.cat(resized_chunks, dim=0)
             depth_frames = depth_tensor.permute(0, 2, 3, 1)  # [B, H, W, C]
 
         # Convert to PIL images

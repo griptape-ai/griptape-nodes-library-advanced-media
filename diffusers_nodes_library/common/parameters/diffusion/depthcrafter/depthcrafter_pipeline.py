@@ -42,8 +42,10 @@ class DepthCrafterVideoDiffusionPipeline(diffusers.StableVideoDiffusionPipeline)
         :return: image_embeddings in shape of [b, 1024]
         """
         # Chunk the resize to avoid exceeding 32-bit index limits on high-res, long videos.
+        # Budget half the limit: the antialiasing gaussian blur reflect-pads each frame
+        # before convolving, so the intermediate tensor is larger than the chunk itself.
         elements_per_frame = video.shape[1] * video.shape[2] * video.shape[3]
-        resize_chunk_size = max(1, MAX_CUDA_TENSOR_ELEMENTS // elements_per_frame)
+        resize_chunk_size = max(1, (MAX_CUDA_TENSOR_ELEMENTS // 2) // elements_per_frame)
 
         resized_chunks = []
         for i in range(0, video.shape[0], resize_chunk_size):
@@ -171,9 +173,10 @@ class DepthCrafterVideoDiffusionPipeline(diffusers.StableVideoDiffusionPipeline)
         video = video.to(device=device, dtype=self.dtype)  # pyright: ignore[reportAttributeAccessIssue]
 
         # Compute max frames per chunk to keep CUDA kernel operations under the
-        # 32-bit index limit (2^31 - 1 elements per tensor).
+        # 32-bit index limit (2^31 - 1 elements per tensor). Budget half the limit
+        # for headroom on kernel intermediates.
         elements_per_frame = video.shape[1] * video.shape[2] * video.shape[3]
-        safe_chunk_frames = max(1, MAX_CUDA_TENSOR_ELEMENTS // elements_per_frame)
+        safe_chunk_frames = max(1, (MAX_CUDA_TENSOR_ELEMENTS // 2) // elements_per_frame)
 
         # Normalize [0,1] -> [-1,1] in chunks.
         for i in range(0, num_frames, safe_chunk_frames):
