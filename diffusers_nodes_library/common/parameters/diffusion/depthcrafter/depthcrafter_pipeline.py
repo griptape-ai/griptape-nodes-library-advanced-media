@@ -227,7 +227,7 @@ class DepthCrafterVideoDiffusionPipeline(diffusers.StableVideoDiffusionPipeline)
                 video[i : i + safe_chunk_frames].shape, generator=generator, device=device, dtype=video.dtype
             )
             video[i : i + safe_chunk_frames] = video[i : i + safe_chunk_frames] + noise_aug_strength * noise
-        del noise
+            del noise
 
         # pdb.set_trace()  # noqa: ERA001
         needs_upcasting = self.vae.dtype == torch.float16 and self.vae.config.force_upcast
