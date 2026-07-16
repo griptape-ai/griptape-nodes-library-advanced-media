@@ -16,6 +16,7 @@ from PIL import Image
 from diffusers_nodes_library.common.parameters.diffusion.runtime_parameters import (
     DiffusionPipelineRuntimeParameters,
 )
+from diffusers_nodes_library.common.utils.math_utils import next_multiple_ge
 from utils.directory_utils import check_cleanup_intermediates_directory
 from utils.video_utils import download_video_to_temp_file, get_video_fps
 
@@ -40,7 +41,7 @@ class DepthCrafterPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
                 name="force_size",
                 default_value=True,
                 type="bool",
-                tooltip="Automatically resize video frames to be multiples of 64 pixels",
+                tooltip="Automatically pad video frames up to a multiple of 64 pixels (cropped back off the output). Padding is lossless; the original pixels are untouched.",
             )
         )
         self._node.add_parameter(
@@ -187,24 +188,17 @@ class DepthCrafterPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
         # Handle force_size parameter
         force_size = self._node.get_parameter_value("force_size")
         if force_size:
-            # Round to nearest multiple of 64
-            width = round(orig_width / 64) * 64
-            height = round(orig_height / 64) * 64
-            # Ensure minimum size is 64
-            width = max(64, width)
-            height = max(64, height)
-
-            if width != orig_width or height != orig_height:
-                self._node.log_params.append_to_logs(  # type: ignore[reportAttributeAccessIssue]
-                    f"Resizing input from {orig_width}x{orig_height} to {width}x{height} (multiples of 64)\n"
-                )
-                frames = [frame.resize((width, height), Image.Resampling.BILINEAR) for frame in frames]
+            # Pad up to the next multiple of 64. Padding (vs. stretching) leaves the
+            # original pixels untouched; the padded rows/columns are cropped back off
+            # the output, so the result is lossless.
+            width = next_multiple_ge(orig_width, 64)
+            height = next_multiple_ge(orig_height, 64)
         else:
             # Check if dimensions are multiples of 64
             if orig_width % 64 != 0 or orig_height % 64 != 0:
                 msg = (
                     f"Input video dimensions ({orig_width}x{orig_height}) are not multiples of 64. "
-                    f"Please resize your video to a multiple of 64 (e.g., {round(orig_width / 64) * 64}x{round(orig_height / 64) * 64}) "
+                    f"Please resize your video to a multiple of 64 (e.g., {next_multiple_ge(orig_width, 64)}x{next_multiple_ge(orig_height, 64)}) "
                     f"or enable the 'force_size' option."
                 )
                 logger.error(msg)
@@ -214,6 +208,22 @@ class DepthCrafterPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
 
         # Convert frames to numpy array then to torch tensor
         frames_np = np.stack([np.array(frame) for frame in frames])  # [B, H, W, C]
+
+        # Edge-pad each frame up to the target multiple-of-64 size. Edge (replicate)
+        # padding avoids the hard color seam a constant matte would create, which the
+        # convolutional encoder would otherwise read as false geometry near the border.
+        # Padding is done in numpy (on CPU) so it can never hit the CUDA 32-bit limit.
+        if height != orig_height or width != orig_width:
+            self._node.log_params.append_to_logs(  # type: ignore[reportAttributeAccessIssue]
+                f"Padding input from {orig_width}x{orig_height} to {width}x{height} (multiples of 64)\n"
+            )
+            pad_bottom = height - orig_height
+            pad_right = width - orig_width
+            frames_np = np.pad(
+                frames_np,
+                ((0, 0), (0, pad_bottom), (0, pad_right), (0, 0)),
+                mode="edge",
+            )
         frames_tensor = torch.from_numpy(frames_np).permute(0, 3, 1, 2).float() / 255.0  # [B, C, H, W]
         frames_tensor = torch.clamp(frames_tensor, 0, 1)
 
@@ -272,6 +282,16 @@ class DepthCrafterPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
         # Convert from PyTorch format [B, C, H, W] to numpy format [B, H, W, C]
         depth_frames = depth_frames.permute(0, 2, 3, 1)  # [B, H, W, C]
 
+        # Crop off the edge padding added for the multiple-of-64 requirement. A crop is
+        # a view (no interpolation, no large-tensor kernel), so it is both lossless and
+        # immune to the 32-bit CUDA index limit. Done before normalization so the padded
+        # border cannot skew the global depth min/max.
+        if height != orig_height or width != orig_width:
+            self._node.log_params.append_to_logs(  # type: ignore[reportAttributeAccessIssue]
+                f"Cropping output from {width}x{height} back to {orig_width}x{orig_height}\n"
+            )
+            depth_frames = depth_frames[:, :orig_height, :orig_width, :]
+
         # Convert to grayscale depth map
         depth_frames = depth_frames.sum(dim=-1) / depth_frames.shape[-1]  # [B, H, W]
 
@@ -282,20 +302,6 @@ class DepthCrafterPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
 
         # Convert back to 3-channel format for video output
         depth_frames = depth_frames.unsqueeze(-1).repeat(1, 1, 1, 3)  # [B, H, W, 3]
-
-        # Convert back to original size if it was resized
-        if (width != orig_width or height != orig_height) and force_size:
-            self._node.log_params.append_to_logs(  # type: ignore[reportAttributeAccessIssue]
-                f"Resizing output from {width}x{height} back to {orig_width}x{orig_height}\n"
-            )
-            depth_tensor = depth_frames.permute(0, 3, 1, 2)  # [B, C, H, W]
-            depth_tensor = torch.nn.functional.interpolate(
-                depth_tensor,
-                size=(orig_height, orig_width),
-                mode="bilinear",
-                align_corners=False,
-            )
-            depth_frames = depth_tensor.permute(0, 2, 3, 1)  # [B, H, W, C]
 
         # Convert to PIL images
         depth_frames_np = (depth_frames.cpu().numpy() * 255).astype(np.uint8)
