@@ -219,11 +219,15 @@ class DepthCrafterVideoDiffusionPipeline(diffusers.StableVideoDiffusionPipeline)
 
         video_embeddings = self.encode_video(video, chunk_size=decode_chunk_size).unsqueeze(0)  # [1, t, 1024]
         torch.cuda.empty_cache()
-        # 4. Add noise augmentation in chunks.
+        # 4. Add noise augmentation in chunks. Slice inline (no named view) so no
+        # reference into `video`'s storage survives the loop — otherwise the `del video`
+        # below would free nothing, since a view pins the entire base storage.
         for i in range(0, num_frames, safe_chunk_frames):
-            chunk = video[i : i + safe_chunk_frames]
-            noise = randn_tensor(chunk.shape, generator=generator, device=device, dtype=video.dtype)
-            video[i : i + safe_chunk_frames] = chunk + noise_aug_strength * noise
+            noise = randn_tensor(
+                video[i : i + safe_chunk_frames].shape, generator=generator, device=device, dtype=video.dtype
+            )
+            video[i : i + safe_chunk_frames] = video[i : i + safe_chunk_frames] + noise_aug_strength * noise
+        del noise
 
         # pdb.set_trace()  # noqa: ERA001
         needs_upcasting = self.vae.dtype == torch.float16 and self.vae.config.force_upcast
