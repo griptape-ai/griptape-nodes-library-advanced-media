@@ -43,6 +43,21 @@ def get_pipeline_component_names(pipe: DiffusionPipeline) -> list[str]:
     return component_names
 
 
+def get_repo_id_from_pipeline(pipe: DiffusionPipeline) -> str:
+    """Return the HuggingFace repo id a pipeline was loaded from.
+
+    Diffusers records the source repo (or local path) on the pipeline as
+    ``name_or_path`` when it is created via ``from_pretrained``. Callers use this
+    to branch on the specific model that was loaded (e.g. selecting the correct
+    resize target for a WAN I2V variant).
+    """
+    repo_id = getattr(pipe, "name_or_path", None)
+    if not repo_id:
+        msg = "Could not determine repo id from pipeline: 'name_or_path' is missing or empty."
+        raise ValueError(msg)
+    return str(repo_id)
+
+
 def _check_cuda_memory_sufficient(
     pipe: DiffusionPipeline,
 ) -> bool:
