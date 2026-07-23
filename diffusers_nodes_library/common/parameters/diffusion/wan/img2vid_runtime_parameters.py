@@ -3,7 +3,6 @@ from typing import Any
 
 import numpy as np
 from griptape.artifacts import ImageUrlArtifact
-from griptape.loaders import ImageLoader
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
 from PIL.Image import Image
@@ -14,6 +13,7 @@ from diffusers_nodes_library.common.parameters.diffusion.wan.base_runtime_parame
 from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
     image_artifact_to_pil,
 )
+from utils.image_utils import load_image_from_url_artifact
 
 logger = logging.getLogger("diffusers_nodes_library")
 
@@ -126,7 +126,7 @@ class WanImageToVideoPipelineRuntimeParameters(WanVideoPipelineRuntimeParameters
     def get_input_image_pil(self) -> Image:
         input_image_artifact = self._node.get_parameter_value("input_image")
         if isinstance(input_image_artifact, ImageUrlArtifact):
-            input_image_artifact = ImageLoader().parse(input_image_artifact.to_bytes())
+            input_image_artifact = load_image_from_url_artifact(input_image_artifact)
         input_image_pil = image_artifact_to_pil(input_image_artifact)
         return input_image_pil.convert("RGB")
 

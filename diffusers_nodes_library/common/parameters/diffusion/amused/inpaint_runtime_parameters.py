@@ -3,7 +3,6 @@ import logging
 import diffusers  # type: ignore[reportMissingImports]
 import torch  # type: ignore[reportMissingImports]
 from griptape.artifacts import ImageUrlArtifact
-from griptape.loaders import ImageLoader
 from griptape_nodes.exe_types.core_types import Parameter
 from griptape_nodes.exe_types.node_types import BaseNode
 from PIL.Image import Image
@@ -15,6 +14,7 @@ from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
     image_artifact_to_pil,
     pil_to_image_artifact,
 )
+from utils.image_utils import load_image_from_url_artifact
 
 logger = logging.getLogger("diffusers_nodes_library")
 
@@ -75,13 +75,13 @@ class AmusedInpaintPipelineRuntimeParameters(AmusedPipelineRuntimeParametersBase
     def get_input_image(self) -> Image:
         image_artifact = self._node.get_parameter_value("image")
         if isinstance(image_artifact, ImageUrlArtifact):
-            image_artifact = ImageLoader().parse(image_artifact.to_bytes())
+            image_artifact = load_image_from_url_artifact(image_artifact)
         return image_artifact_to_pil(image_artifact).convert("RGB")
 
     def get_mask_image(self) -> Image:
         mask_artifact = self._node.get_parameter_value("mask_image")
         if isinstance(mask_artifact, ImageUrlArtifact):
-            mask_artifact = ImageLoader().parse(mask_artifact.to_bytes())
+            mask_artifact = load_image_from_url_artifact(mask_artifact)
         return image_artifact_to_pil(mask_artifact).convert("L")
 
     def _get_pipe_kwargs(self) -> dict:
