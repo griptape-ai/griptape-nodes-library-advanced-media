@@ -16,7 +16,10 @@ from diffusers_nodes_library.common.parameters.diffusion.pipeline_parameters imp
     DiffusionPipelineParameters,
 )
 from diffusers_nodes_library.common.utils.huggingface_utils import model_cache
-from diffusers_nodes_library.common.utils.pipeline_utils import cleanup_memory_caches
+from diffusers_nodes_library.common.utils.pipeline_utils import (
+    cleanup_memory_after_exception,
+    is_out_of_memory_error,
+)
 
 logger = logging.getLogger("diffusers_nodes_library")
 
@@ -163,10 +166,14 @@ class DiffusionPipelineRuntimeNode(ParameterConnectionPreservationMixin, Control
         def work() -> Any:
             try:
                 return self.pipe_params.runtime_parameters.process_pipeline(pipe)
-            except Exception:
+            except Exception as e:
                 logger.exception("%s: Diffusion Pipeline execution failed", self.name)
-                # Aggressive cleanup on failure
-                cleanup_memory_caches()
+                cleanup_memory_after_exception(e)
+                if is_out_of_memory_error(e):
+                    # A rerun with the same config is a cache hit, so no teardown would
+                    # run and it would OOM again; evict the pipeline so the next run
+                    # rebuilds from a clean slate.
+                    model_cache.remove_pipeline(self.get_parameter_value("pipeline"))
                 raise
 
         yield work

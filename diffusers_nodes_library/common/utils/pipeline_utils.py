@@ -1,6 +1,7 @@
 import contextlib
 import gc
 import logging
+import traceback
 
 import torch  # type: ignore[reportMissingImports]
 from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
@@ -367,3 +368,27 @@ def cleanup_memory_caches() -> None:
         torch.cuda.empty_cache()
     if torch.backends.mps.is_available():
         torch.mps.empty_cache()
+
+
+def is_out_of_memory_error(exc: BaseException) -> bool:
+    """Best-effort check for a device out-of-memory error across backends.
+
+    CUDA raises torch.cuda.OutOfMemoryError, but an exhausted context can also surface
+    as a plain RuntimeError ("CUDA error: out of memory"), and MPS raises RuntimeError
+    ("MPS backend out of memory"), so the message is checked as a fallback.
+    """
+    if isinstance(exc, torch.cuda.OutOfMemoryError):
+        return True
+    return "out of memory" in str(exc).lower()
+
+
+def cleanup_memory_after_exception(exc: BaseException) -> None:
+    """Reclaim memory while a caught exception is still live.
+
+    The exception's traceback keeps every frame's locals alive - including the
+    activation tensors that caused an OOM - so emptying allocator caches inside an
+    except block reclaims nothing on its own. Frame locals are released first
+    (frames still executing are skipped by clear_frames), then caches are emptied.
+    """
+    traceback.clear_frames(exc.__traceback__)
+    cleanup_memory_caches()
