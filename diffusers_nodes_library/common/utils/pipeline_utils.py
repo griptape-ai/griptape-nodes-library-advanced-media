@@ -335,18 +335,29 @@ def optimize_diffusion_pipeline(  # noqa: PLR0913
 def clear_diffusion_pipeline(
     pipe: DiffusionPipeline,
 ) -> None:
-    """Clear pipeline from memory."""
-    for component_name in get_pipeline_component_names(pipe):
-        if hasattr(pipe, component_name):
-            component = getattr(pipe, component_name)
-            if component is not None:
-                with contextlib.suppress(NotImplementedError):
-                    component.to("cpu")
-                del component
-                setattr(pipe, component_name, None)
+    """Clear pipeline from memory.
 
-    del pipe
-    cleanup_memory_caches()
+    Dropping the references and then emptying the allocator caches is what actually
+    returns memory. Components are deliberately not moved to CPU first: a device
+    transfer allocates, so on an already-exhausted device it raises and aborts the
+    teardown, leaving the pipeline resident and unrecoverable without a restart.
+    """
+    try:
+        # enable_model_cpu_offload registers hooks that hold their own references to each
+        # component, so nulling the pipeline attributes alone would not release the weights.
+        with contextlib.suppress(Exception):
+            pipe._all_hooks = []  # noqa: SLF001
+
+        for component_name in get_pipeline_component_names(pipe):
+            # Detection falls back to a hardcoded list, which can name components this
+            # pipeline never had; assigning those would inject bogus attributes.
+            if not hasattr(pipe, component_name):
+                continue
+            # A component that refuses assignment must not strand the rest of the teardown.
+            with contextlib.suppress(Exception):
+                setattr(pipe, component_name, None)
+    finally:
+        cleanup_memory_caches()
 
 
 def cleanup_memory_caches() -> None:
@@ -354,3 +365,5 @@ def cleanup_memory_caches() -> None:
     gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
+    if torch.backends.mps.is_available():
+        torch.mps.empty_cache()
