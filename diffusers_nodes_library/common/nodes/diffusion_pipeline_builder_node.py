@@ -175,7 +175,10 @@ class DiffusionPipelineBuilderNode(ParameterConnectionPreservationMixin, Control
                 # Release frame locals pinned by the traceback before tearing down,
                 # then remove the partial/corrupted pipeline from the cache.
                 cleanup_memory_after_exception(e)
-                model_cache.remove_pipeline(config_hash)
+                try:
+                    model_cache.remove_pipeline(config_hash)
+                except Exception:
+                    logger.exception("%s: Failed to evict partial pipeline", self.name)
                 raise
 
         yield work

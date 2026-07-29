@@ -172,8 +172,11 @@ class DiffusionPipelineRuntimeNode(ParameterConnectionPreservationMixin, Control
                 if is_out_of_memory_error(e):
                     # A rerun with the same config is a cache hit, so no teardown would
                     # run and it would OOM again; evict the pipeline so the next run
-                    # rebuilds from a clean slate.
-                    model_cache.remove_pipeline(self.get_parameter_value("pipeline"))
+                    # rebuilds from a clean slate. Recovery must not mask the OOM.
+                    try:
+                        model_cache.remove_pipeline(self.get_parameter_value("pipeline"))
+                    except Exception:
+                        logger.exception("%s: Failed to evict pipeline after OOM", self.name)
                 raise
 
         yield work
