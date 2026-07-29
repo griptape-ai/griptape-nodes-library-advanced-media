@@ -5,7 +5,7 @@ from typing import Any
 from huggingface_hub import scan_cache_dir  # pyright: ignore[reportMissingImports]
 from huggingface_hub.constants import HF_HUB_CACHE
 
-from diffusers_nodes_library.common.utils.pipeline_utils import clear_diffusion_pipeline
+from diffusers_nodes_library.common.utils.pipeline_utils import cleanup_memory_caches, clear_diffusion_pipeline
 
 logger = logging.getLogger("griptape_nodes")
 
@@ -112,12 +112,22 @@ class ModelCache:
             clear_diffusion_pipeline(pipe)
 
     def clear_pipeline_cache(self) -> None:
-        """Clear all cached pipelines."""
+        """Clear all cached pipelines.
+
+        Each pipeline is evicted from the cache before being torn down, so its memory is
+        released even if teardown fails - a retained cache entry would keep the pipeline
+        resident and force an engine restart to recover.
+        """
         logger.info("Clearing pipeline cache")
-        for config_hash, pipe in self._pipeline_cache.items():
+        while self._pipeline_cache:
+            config_hash, pipe = self._pipeline_cache.popitem()
             logger.info("Clearing pipeline with config hash: %s", config_hash)
-            clear_diffusion_pipeline(pipe)
-        self._pipeline_cache.clear()
+            try:
+                clear_diffusion_pipeline(pipe)
+            except Exception:
+                logger.exception("Failed to clear pipeline with config hash: %s", config_hash)
+            del pipe
+        cleanup_memory_caches()
 
     def get_cache_stats(self) -> dict[str, Any]:
         """Get statistics about the pipeline cache."""

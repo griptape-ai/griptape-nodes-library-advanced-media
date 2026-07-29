@@ -1,6 +1,7 @@
 import contextlib
 import gc
 import logging
+import traceback
 
 import torch  # type: ignore[reportMissingImports]
 from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
@@ -335,22 +336,75 @@ def optimize_diffusion_pipeline(  # noqa: PLR0913
 def clear_diffusion_pipeline(
     pipe: DiffusionPipeline,
 ) -> None:
-    """Clear pipeline from memory."""
-    for component_name in get_pipeline_component_names(pipe):
-        if hasattr(pipe, component_name):
-            component = getattr(pipe, component_name)
-            if component is not None:
-                with contextlib.suppress(NotImplementedError):
-                    component.to("cpu")
-                del component
-                setattr(pipe, component_name, None)
+    """Clear pipeline from memory.
 
-    del pipe
-    cleanup_memory_caches()
+    Dropping the references and then emptying the allocator caches is what actually
+    returns memory. Components are deliberately not moved to CPU first: a device
+    transfer allocates, so on an already-exhausted device it raises and aborts the
+    teardown, leaving the pipeline resident and unrecoverable without a restart.
+    """
+    try:
+        # enable_model_cpu_offload registers hooks that hold their own references to each
+        # component, so nulling the pipeline attributes alone would not release the weights.
+        with contextlib.suppress(Exception):
+            pipe._all_hooks = []  # noqa: SLF001
+
+        for component_name in get_pipeline_component_names(pipe):
+            # Detection falls back to a hardcoded list, which can name components this
+            # pipeline never had; assigning those would inject bogus attributes.
+            if not hasattr(pipe, component_name):
+                continue
+            # A component that refuses assignment must not strand the rest of the teardown.
+            with contextlib.suppress(Exception):
+                setattr(pipe, component_name, None)
+    finally:
+        cleanup_memory_caches()
 
 
 def cleanup_memory_caches() -> None:
-    """Clear memory caches."""
-    gc.collect()
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
+    """Clear memory caches.
+
+    Each step is independent and best-effort: a driver in a bad state can make these
+    calls raise, and a failure here must not pre-empt the caller's own recovery. A
+    failure is still logged, since silently reclaiming nothing is hard to diagnose.
+    """
+    try:
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        if torch.backends.mps.is_available():
+            torch.mps.empty_cache()
+    except Exception:
+        logger.exception("Failed to clear memory caches")
+
+
+def is_out_of_memory_error(exc: BaseException) -> bool:
+    """Best-effort check for an out-of-memory error across backends.
+
+    CUDA raises torch.cuda.OutOfMemoryError, but an exhausted context can also surface
+    as a plain RuntimeError ("CUDA error: out of memory"), and MPS raises RuntimeError
+    ("MPS backend out of memory"), so the message is checked as a fallback. MemoryError
+    counts too: CPU-offloaded pipelines hold their weights in host RAM.
+    """
+    if isinstance(exc, torch.cuda.OutOfMemoryError | MemoryError):
+        return True
+    # A custom exception may raise from __str__; an unreadable message is not a match.
+    with contextlib.suppress(Exception):
+        return "out of memory" in str(exc).lower()
+    return False
+
+
+def cleanup_memory_after_exception(exc: BaseException) -> None:
+    """Reclaim memory while a caught exception is still live.
+
+    The exception's traceback keeps every frame's locals alive - including the
+    activation tensors that caused an OOM - so emptying allocator caches inside an
+    except block reclaims nothing on its own. Frame locals are released first
+    (frames still executing are skipped by clear_frames), then caches are emptied.
+
+    Callers use this on their recovery path, so it never raises: masking the original
+    failure would cost the diagnostic the user needs and skip the rest of that path.
+    """
+    with contextlib.suppress(Exception):
+        traceback.clear_frames(exc.__traceback__)
+    cleanup_memory_caches()
