@@ -38,7 +38,6 @@ dependencies = [
     "scipy>=1.10.0",
     "matplotlib>=3.10.3",
     "griptape[drivers-prompt-amazon-bedrock,drivers-prompt-anthropic,drivers-prompt-cohere,drivers-prompt-ollama,drivers-web-scraper-trafilatura,drivers-web-search-duckduckgo,drivers-web-search-exa,loaders-image]>=1.9.4",
-    "griptape-nodes>=0.77.5",
 ]
 
 [build-system]
@@ -107,7 +106,7 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [dependency-groups]
-dev = ["pyright>=1.1.396", "pytest-asyncio>=0.21.0", "ruff>=0.8.0", "pytest"]
+dev = ["pyright>=1.1.396", "pytest-asyncio>=0.21.0", "ruff>=0.8.0", "pytest", "griptape-nodes-engine>=0.77.5"]
 
 [tool.pyright]
 venvPath = "."

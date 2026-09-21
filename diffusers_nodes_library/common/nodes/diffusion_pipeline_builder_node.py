@@ -18,7 +18,10 @@ from diffusers_nodes_library.common.parameters.diffusion.builder_parameters impo
 from diffusers_nodes_library.common.parameters.huggingface_pipeline_parameter import HuggingFacePipelineParameter
 from diffusers_nodes_library.common.utils.huggingface_utils import model_cache
 from diffusers_nodes_library.common.utils.lora_utils import LorasParameter
-from diffusers_nodes_library.common.utils.pipeline_utils import cleanup_memory_caches, optimize_diffusion_pipeline
+from diffusers_nodes_library.common.utils.pipeline_utils import (
+    cleanup_memory_after_exception,
+    optimize_diffusion_pipeline,
+)
 
 logger = logging.getLogger("diffusers_nodes_library")
 
@@ -167,12 +170,15 @@ class DiffusionPipelineBuilderNode(ParameterConnectionPreservationMixin, Control
             try:
                 with self.log_params.append_profile_to_logs("Pipeline building/caching"):
                     return model_cache.get_or_build_pipeline(config_hash, self._build_pipeline)
-            except Exception:
+            except Exception as e:
                 logger.exception("%s: Diffusion Pipeline build failed", self.name)
-                # Remove partial/corrupted pipeline from cache
-                model_cache.remove_pipeline(config_hash)
-                # Aggressive cleanup on failure
-                cleanup_memory_caches()
+                # Release frame locals pinned by the traceback before tearing down,
+                # then remove the partial/corrupted pipeline from the cache.
+                cleanup_memory_after_exception(e)
+                try:
+                    model_cache.remove_pipeline(config_hash)
+                except Exception:
+                    logger.exception("%s: Failed to evict partial pipeline", self.name)
                 raise
 
         yield work
