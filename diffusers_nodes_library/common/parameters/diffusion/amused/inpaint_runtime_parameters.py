@@ -29,6 +29,7 @@ class AmusedInpaintPipelineRuntimeParameters(AmusedPipelineRuntimeParametersBase
         self._node.add_parameter(
             Parameter(
                 name="image",
+                input_types=["ImageArtifact", "ImageUrlArtifact"],
                 type="ImageArtifact",
                 tooltip="Input image to inpaint",
             )
@@ -36,6 +37,7 @@ class AmusedInpaintPipelineRuntimeParameters(AmusedPipelineRuntimeParametersBase
         self._node.add_parameter(
             Parameter(
                 name="mask_image",
+                input_types=["ImageArtifact", "ImageUrlArtifact"],
                 type="ImageArtifact",
                 tooltip="Mask image (white areas will be inpainted)",
             )

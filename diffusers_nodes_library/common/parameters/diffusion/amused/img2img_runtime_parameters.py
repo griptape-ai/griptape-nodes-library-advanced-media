@@ -29,6 +29,7 @@ class AmusedImg2ImgPipelineRuntimeParameters(AmusedPipelineRuntimeParametersBase
         self._node.add_parameter(
             Parameter(
                 name="image",
+                input_types=["ImageArtifact", "ImageUrlArtifact"],
                 type="ImageArtifact",
                 tooltip="Input image to transform",
             )
