@@ -4,7 +4,6 @@ from typing import Any
 import PIL.Image
 import torch  # type: ignore[reportMissingImports]
 from griptape.artifacts import ImageUrlArtifact
-from griptape.loaders import ImageLoader
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
 from PIL.Image import Image
@@ -16,6 +15,7 @@ from pillow_nodes_library.utils import (
     image_artifact_to_pil,  # type: ignore[reportMissingImports]
     pil_to_image_artifact,  # type: ignore[reportMissingImports]
 )
+from utils.image_utils import load_image_from_url_artifact
 
 logger = logging.getLogger("diffusers_nodes_library")
 
@@ -99,7 +99,7 @@ class StableDiffusionDiffEditPipelineRuntimeParameters(DiffusionPipelineRuntimeP
     def get_image(self) -> Image:
         image_artifact = self._node.get_parameter_value("image")
         if isinstance(image_artifact, ImageUrlArtifact):
-            image_artifact = ImageLoader().parse(image_artifact.to_bytes())
+            image_artifact = load_image_from_url_artifact(image_artifact)
         image = image_artifact_to_pil(image_artifact)
         return self._resize_and_pad_image(image, self.get_width(), self.get_height())
 
