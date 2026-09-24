@@ -11,18 +11,12 @@ from openpose_nodes_library.model.model import HandPoseModel
 
 
 class Hand:
-    def __init__(self, state_dict: dict[str, Any]) -> None:
+    def __init__(self, state_dict: dict[str, Any], *, device: str) -> None:
         self.model = HandPoseModel()
 
-        # Use MPS if available (Apple Silicon), otherwise CUDA, otherwise CPU
-        if torch.backends.mps.is_available():
-            self.device = torch.device("mps")
-            self.model = self.model.to(self.device)
-        elif torch.cuda.is_available():
-            self.device = torch.device("cuda")
-            self.model = self.model.cuda()
-        else:
-            self.device = torch.device("cpu")
+        # The engine chose this device for the node that owns the model; probing torch would override it.
+        self.device = torch.device(device)
+        self.model = self.model.to(self.device)
 
         model_dict = util.transfer(self.model, state_dict)
         self.model.load_state_dict(model_dict)
@@ -78,7 +72,7 @@ class Hand:
 
 if __name__ == "__main__":
     state_dict = torch.load("../model/hand_pose_model.pth")
-    hand_estimation = Hand(state_dict)
+    hand_estimation = Hand(state_dict, device="cpu")
 
     test_image = "../images/hand.jpg"
     ori_img = cv2.imread(test_image)  # B,G,R order

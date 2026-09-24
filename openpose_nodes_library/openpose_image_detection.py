@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import copy
 import logging
+from typing import TYPE_CHECKING
 
-import cv2  # type: ignore[reportMissingImports]
-import huggingface_hub  # pyright: ignore[reportMissingImports]
 import numpy as np
 import PIL.Image  # type: ignore[reportMissingImports]
 from griptape.artifacts import ImageUrlArtifact
@@ -13,16 +14,16 @@ from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_file
 )
 from griptape_nodes.exe_types.param_components.log_parameter import LogParameter
 from PIL.Image import Image  # type: ignore[reportMissingImports]
-from safetensors.torch import load_file  # type: ignore[reportMissingImports]
 
-from openpose_nodes_library.model import util  # type: ignore[reportMissingImports]
-from openpose_nodes_library.model.body import Body  # type: ignore[reportMissingImports]
-from openpose_nodes_library.model.hand import Hand  # type: ignore[reportMissingImports]
 from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
     image_artifact_to_pil,  # type: ignore[reportMissingImports]
     pil_to_image_artifact,  # type: ignore[reportMissingImports]
 )
 from utils.image_utils import load_image_from_url_artifact  # type: ignore[reportMissingImports]
+
+if TYPE_CHECKING:
+    from openpose_nodes_library.model.body import Body  # type: ignore[reportMissingImports]
+    from openpose_nodes_library.model.hand import Hand  # type: ignore[reportMissingImports]
 
 logger = logging.getLogger("openpose")
 
@@ -161,6 +162,12 @@ class OpenPoseImageDetection(ControlNode):
         self.parameter_output_values["output_image"] = output_image_url_artifact
 
     def get_openpose_model(self) -> tuple[Body | Hand, str]:
+        import huggingface_hub  # pyright: ignore[reportMissingImports]
+        from safetensors.torch import load_file  # type: ignore[reportMissingImports]
+
+        from openpose_nodes_library.model.body import Body  # type: ignore[reportMissingImports]
+        from openpose_nodes_library.model.hand import Hand  # type: ignore[reportMissingImports]
+
         repo_id, revision = self._huggingface_repo_parameter.get_repo_revision()
         model_file = self._huggingface_repo_parameter.get_repo_filename()
 
@@ -188,9 +195,9 @@ class OpenPoseImageDetection(ControlNode):
         state_dict = load_file(model_path)
 
         if model_type == "hand":
-            self._model = Hand(state_dict)
+            self._model = Hand(state_dict, device=self.execution_device)
         else:
-            self._model = Body(state_dict, model_type)
+            self._model = Body(state_dict, model_type, device=self.execution_device)
 
         self._model_type = model_type
         self._repo_id = repo_id
@@ -203,6 +210,10 @@ class OpenPoseImageDetection(ControlNode):
         yield lambda: self._process()
 
     def _process(self) -> AsyncResult | None:
+        import cv2  # type: ignore[reportMissingImports]
+
+        from openpose_nodes_library.model import util  # type: ignore[reportMissingImports]
+
         self.log_params.clear_logs()
         self.log_params.append_to_logs("Starting OpenPose image detection...\n")
 

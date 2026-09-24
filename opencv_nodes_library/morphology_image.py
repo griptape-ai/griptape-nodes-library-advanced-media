@@ -1,7 +1,6 @@
 import logging
 from typing import Any, ClassVar
 
-import cv2  # type: ignore[reportMissingImports]
 import numpy as np
 import PIL.Image
 from griptape.artifacts import ImageUrlArtifact
@@ -120,6 +119,8 @@ class MorphologyImage(ControlNode):
 
     def _get_opencv_operation(self, operation: str) -> int:
         """Map operation name to OpenCV constant."""
+        import cv2  # type: ignore[reportMissingImports]
+
         operation_map = {
             "Erode": cv2.MORPH_ERODE,
             "Dilate": cv2.MORPH_DILATE,
@@ -130,6 +131,8 @@ class MorphologyImage(ControlNode):
 
     def _get_opencv_kernel_shape(self, shape: str) -> int:
         """Map kernel shape name to OpenCV constant."""
+        import cv2  # type: ignore[reportMissingImports]
+
         shape_map = {
             "Rectangle": cv2.MORPH_RECT,
             "Ellipse": cv2.MORPH_ELLIPSE,
@@ -138,6 +141,8 @@ class MorphologyImage(ControlNode):
         return shape_map.get(shape, cv2.MORPH_RECT)
 
     def _process(self) -> AsyncResult | None:
+        import cv2  # type: ignore[reportMissingImports]
+
         input_image_artifact = self.get_parameter_value("input_image")
         operation = str(self.get_parameter_value("operation"))
         kernel_shape = str(self.get_parameter_value("kernel_shape"))

@@ -1,10 +1,13 @@
-import logging
-import os
-import platform
-import sys
+from __future__ import annotations
 
-import torch  # type: ignore[reportMissingImports]
-from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import torch  # type: ignore[reportMissingImports]
+    from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
+
+import logging
+import platform
 
 logger = logging.getLogger("diffusers_nodes_library")
 
@@ -85,80 +88,10 @@ def print_pipeline_memory_footprint(pipe: DiffusionPipeline, component_names: li
     logger.info("")
 
 
-def get_best_device(*, quiet: bool = False) -> torch.device:  # noqa: C901 PLR0911 PLR0912
-    """Gets the best torch device using heuristics."""
-    system = platform.system()
-    machine = platform.machine().lower()
-    python_version = sys.version.split()[0]
-
-    if not quiet:
-        logger.info("Detected system: %s, machine: %s, Python: %s", system, machine, python_version)
-
-    # TPU detection (Colab etc.)
-    if "COLAB_TPU_ADDR" in os.environ:
-        try:
-            import torch_xla.core.xla_model as xm  # pyright: ignore[reportMissingImports]
-
-            device = xm.xla_device()
-            if not quiet:
-                logger.info("Detected TPU environment, using XLA device.")
-            return device  # noqa: TRY300
-        except ImportError:
-            if not quiet:
-                logger.info("TPU environment detected but torch-xla not installed, skipping TPU.")
-
-    # Mac branch
-    if system == "Darwin":
-        if machine == "arm64":
-            if torch.backends.mps.is_available():
-                if not quiet:
-                    logger.info("Detected macOS with Apple Silicon (arm64), using MPS device.")
-                return torch.device("mps")
-            if not quiet:
-                logger.info("Detected macOS with Apple Silicon (arm64), but MPS unavailable, using CPU.")
-            return torch.device("cpu")
-        if not quiet:
-            logger.info("Detected macOS with Intel architecture (x86_64), using CPU.")
-        return torch.device("cpu")
-
-    # Windows branch
-    if system == "Windows":
-        if torch.cuda.is_available():
-            device_name = torch.cuda.get_device_name(0)
-            if not quiet:
-                logger.info("Detected Windows with CUDA support, using CUDA device: %s.", device_name)
-            return torch.device("cuda")
-        try:
-            import torch_directml  # pyright: ignore[reportMissingImports]
-
-            device = torch_directml.device()
-            if not quiet:
-                logger.info("Detected Windows without CUDA, using DirectML device.")
-            return device  # noqa: TRY300
-        except ImportError:
-            if not quiet:
-                logger.info("Detected Windows without CUDA or DirectML, using CPU.")
-        return torch.device("cpu")
-
-    # Linux branch
-    if system == "Linux":
-        if torch.cuda.is_available():
-            device_name = torch.cuda.get_device_name(0)
-            if not quiet:
-                logger.info("Detected Linux with CUDA support, using CUDA device: %s.", device_name)
-            return torch.device("cuda")
-        if not quiet:
-            logger.info("Detected Linux without CUDA support, using CPU.")
-        return torch.device("cpu")
-
-    # Unknown OS fallback
-    if not quiet:
-        logger.info("Unknown system '%s', using CPU.", system)
-    return torch.device("cpu")
-
-
 def get_free_cuda_memory() -> int:
     """Get free memory on the current CUDA device."""
+    import torch  # type: ignore[reportMissingImports]
+
     if not torch.cuda.is_available():
         return 0
 
@@ -170,6 +103,8 @@ def get_free_cuda_memory() -> int:
 
 def should_enable_attention_slicing(device: torch.device) -> bool:  # noqa: PLR0911
     """Decide whether to enable attention slicing based on the device and platform."""
+    import torch  # type: ignore[reportMissingImports]
+
     system = platform.system()
 
     # Special logic for macOS

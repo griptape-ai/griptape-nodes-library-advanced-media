@@ -1,8 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, ClassVar
+
+if TYPE_CHECKING:
+    import diffusers  # type: ignore[reportMissingImports]
+
 import logging
 
-import diffusers  # type: ignore[reportMissingImports]
-import torch  # type: ignore[reportMissingImports]
-import transformers  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
 
@@ -15,6 +19,8 @@ logger = logging.getLogger("diffusers_nodes_library")
 
 
 class QwenImg2ImgPipelineParameters(DiffusionPipelineTypePipelineParameters):
+    PIPELINE_NAME: ClassVar[str] = "QwenImageImg2ImgPipeline"
+
     def __init__(self, node: BaseNode, *, list_all_models: bool = False):
         super().__init__(node)
         self._model_repo_parameter = HuggingFaceRepoParameter(
@@ -35,9 +41,7 @@ class QwenImg2ImgPipelineParameters(DiffusionPipelineTypePipelineParameters):
             list_all_models=list_all_models,
         )
 
-        self._scheduler_parameters = SchedulerParameters(
-            node, scheduler_types=[diffusers.FlowMatchEulerDiscreteScheduler]
-        )
+        self._scheduler_parameters = SchedulerParameters(node, scheduler_type_names=["FlowMatchEulerDiscreteScheduler"])
 
     def add_input_parameters(self) -> None:
         self._model_repo_parameter.add_input_parameters()
@@ -58,6 +62,8 @@ class QwenImg2ImgPipelineParameters(DiffusionPipelineTypePipelineParameters):
 
     @property
     def pipeline_class(self) -> type:
+        import diffusers  # type: ignore[reportMissingImports]
+
         return diffusers.QwenImageImg2ImgPipeline
 
     def validate_before_node_run(self) -> list[Exception] | None:
@@ -76,7 +82,14 @@ class QwenImg2ImgPipelineParameters(DiffusionPipelineTypePipelineParameters):
 
         return errors or None
 
+    def validate_in_execution_environment(self) -> list[Exception] | None:
+        return self._scheduler_parameters.validate_in_execution_environment()
+
     def build_pipeline(self) -> diffusers.QwenImageImg2ImgPipeline:
+        import diffusers  # type: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
+        import transformers  # type: ignore[reportMissingImports]
+
         base_repo_id, base_revision = self._model_repo_parameter.get_repo_revision()
         text_encoder_repo_id, text_encoder_revision = self._text_encoder_repo_parameter.get_repo_revision()
 

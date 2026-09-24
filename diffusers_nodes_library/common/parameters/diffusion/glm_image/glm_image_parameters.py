@@ -1,7 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, ClassVar
+
+if TYPE_CHECKING:
+    import diffusers  # type: ignore[reportMissingImports]
+
 import logging
 
-import diffusers  # type: ignore[reportMissingImports]
-import torch  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
 
@@ -17,6 +22,8 @@ GLM_IMAGE_REPO_IDS = [
 
 
 class GlmImagePipelineParameters(DiffusionPipelineTypePipelineParameters):
+    PIPELINE_NAME: ClassVar[str] = "GlmImagePipeline"
+
     def __init__(self, node: BaseNode, *, list_all_models: bool = False):
         super().__init__(node)
         self._model_repo_parameter = HuggingFaceRepoParameter(
@@ -39,6 +46,8 @@ class GlmImagePipelineParameters(DiffusionPipelineTypePipelineParameters):
 
     @property
     def pipeline_class(self) -> type:
+        import diffusers  # type: ignore[reportMissingImports]
+
         return diffusers.GlmImagePipeline
 
     def validate_before_node_run(self) -> list[Exception] | None:
@@ -56,10 +65,11 @@ class GlmImagePipelineParameters(DiffusionPipelineTypePipelineParameters):
         return True
 
     def build_pipeline(self) -> diffusers.GlmImagePipeline:
-        from diffusers_nodes_library.common.utils.torch_utils import get_best_device
+        import diffusers  # type: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
 
         base_repo_id, base_revision = self._model_repo_parameter.get_repo_revision()
-        device = get_best_device()
+        device = torch.device(self._node.execution_device)
 
         # GLM-Image requires device_map to properly load the vision_language_encoder
         # component. Without it, meta tensors remain which cause errors during i2i.

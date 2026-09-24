@@ -1,7 +1,6 @@
 import logging
 from abc import abstractmethod
 
-import huggingface_hub  # pyright: ignore[reportMissingImports]
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import ControlNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_file_parameter import (
@@ -44,6 +43,8 @@ class HuggingFaceWanLora(ControlNode):
         self.lora_weight_and_output_params.add_output_parameters()
 
     def process(self) -> None:
+        import huggingface_hub  # pyright: ignore[reportMissingImports]
+
         repo_id, revision = self.lora_revisions_params.get_repo_revision()
         lora_path = huggingface_hub.hf_hub_download(
             repo_id=repo_id,

@@ -1,14 +1,13 @@
+from __future__ import annotations
+
 import copy
 import logging
 import os
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import cv2  # type: ignore[reportMissingImports]
-import huggingface_hub  # pyright: ignore[reportMissingImports]
-import imageio  # type: ignore[reportMissingImports]
 import numpy as np
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
@@ -19,16 +18,12 @@ from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_file
 from griptape_nodes.exe_types.param_components.log_parameter import LogParameter
 from griptape_nodes.exe_types.param_components.project_file_parameter import ProjectFileParameter
 from griptape_nodes.files.file import File
-from safetensors.torch import load_file  # type: ignore[reportMissingImports]
-
-# static_ffmpeg is dynamically installed by the library loader at runtime
-# into the library's own virtual environment, but not available during type checking
-from static_ffmpeg import run  # type: ignore[import-untyped]
 
 from artifact_utils.video_utils import dict_to_video_url_artifact  # type: ignore[reportMissingImports]
-from openpose_nodes_library.model import util  # type: ignore[reportMissingImports]
-from openpose_nodes_library.model.body import Body  # type: ignore[reportMissingImports]
-from openpose_nodes_library.model.hand import Hand  # type: ignore[reportMissingImports]
+
+if TYPE_CHECKING:
+    from openpose_nodes_library.model.body import Body  # type: ignore[reportMissingImports]
+    from openpose_nodes_library.model.hand import Hand  # type: ignore[reportMissingImports]
 
 logger = logging.getLogger("openpose")
 
@@ -90,6 +85,10 @@ def process_frame(  # noqa: PLR0913
     black_background: bool = False,
 ) -> Any:
     """Process a single frame and return annotated result."""
+    import cv2  # type: ignore[reportMissingImports]
+
+    from openpose_nodes_library.model import util  # type: ignore[reportMissingImports]
+
     # Calculate processing dimensions
     proc_height, proc_width, scale_factor = calculate_processing_size(frame.shape[0], frame.shape[1], max_dim)
 
@@ -246,6 +245,12 @@ class OpenPoseVideoDetection(ControlNode):
         self.parameter_output_values["output_video"] = VideoUrlArtifact(saved.location)
 
     def get_openpose_model(self) -> tuple[Body | Hand, str]:
+        import huggingface_hub  # pyright: ignore[reportMissingImports]
+        from safetensors.torch import load_file  # type: ignore[reportMissingImports]
+
+        from openpose_nodes_library.model.body import Body  # type: ignore[reportMissingImports]
+        from openpose_nodes_library.model.hand import Hand  # type: ignore[reportMissingImports]
+
         repo_id, revision = self._huggingface_repo_parameter.get_repo_revision()
         model_file = self._huggingface_repo_parameter.get_repo_filename()
 
@@ -273,9 +278,9 @@ class OpenPoseVideoDetection(ControlNode):
         state_dict = load_file(model_path)
 
         if model_type == "hand":
-            self._model = Hand(state_dict)
+            self._model = Hand(state_dict, device=self.execution_device)
         else:
-            self._model = Body(state_dict, model_type)
+            self._model = Body(state_dict, model_type, device=self.execution_device)
 
         self._model_type = model_type
         self._repo_id = repo_id
@@ -288,6 +293,13 @@ class OpenPoseVideoDetection(ControlNode):
         yield lambda: self._process()
 
     def _process(self) -> AsyncResult | None:  # noqa: C901, PLR0912, PLR0915
+        import cv2  # type: ignore[reportMissingImports]
+        import imageio  # type: ignore[reportMissingImports]
+
+        # static_ffmpeg is installed into the execution environment, so it is not importable
+        # from the orchestrator and not visible to the type checker.
+        from static_ffmpeg import run  # type: ignore[import-untyped]
+
         self.log_params.clear_logs()
         self.log_params.append_to_logs("Starting OpenPose video detection...\n")
 

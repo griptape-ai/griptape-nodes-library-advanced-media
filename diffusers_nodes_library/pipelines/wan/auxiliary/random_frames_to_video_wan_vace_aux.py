@@ -2,7 +2,6 @@ import logging
 import tempfile
 from pathlib import Path
 
-import diffusers  # type: ignore[reportMissingImports]
 from griptape.artifacts import ImageUrlArtifact
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterList, ParameterMode
@@ -212,6 +211,8 @@ class RandomFramesToVideoWanVaceAux(ControlNode):
 
     def _export_frames_to_video(self, frames: list[Image.Image]) -> Path:
         """Export PIL frames to MP4 video file."""
+        import diffusers  # type: ignore[reportMissingImports]
+
         with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file:
             temp_path = Path(temp_file.name)
 

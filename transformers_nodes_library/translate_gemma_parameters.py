@@ -1,11 +1,9 @@
 import logging
 from typing import Any
 
-import torch  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
 from griptape_nodes.exe_types.param_components.log_parameter import LogParameter
-from transformers import pipeline  # type: ignore[reportMissingImports]
 
 logger = logging.getLogger("transformers_nodes_library")
 
@@ -71,14 +69,14 @@ class TranslateGemmaParameters:
         return self._huggingface_repo_parameter.get_repo_revision()
 
     def load_pipeline(self) -> Any:
+        import torch  # type: ignore[reportMissingImports]
+        from transformers import pipeline  # type: ignore[reportMissingImports]
+
         repo_id, revision = self.get_repo_revision()
 
-        # Determine device
-        if torch.cuda.is_available():
-            device = "cuda"
-        else:
-            device = "cpu"
-            logger.warning("CUDA not available, falling back to CPU. Translation will be slow.")
+        device = self._node.execution_device
+        if device == "cpu":
+            logger.warning("Running on CPU. Translation will be slow.")
 
         # Load pipeline
         self._pipeline = pipeline(

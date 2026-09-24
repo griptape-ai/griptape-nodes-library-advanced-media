@@ -5,6 +5,8 @@ import PIL.ImageOps
 from griptape.artifacts import ImageArtifact, ImageUrlArtifact
 from PIL.Image import Image
 
+from utils.directory_utils import cleanup_static_files_subdirectory
+
 
 def image_artifact_to_pil(image_artifact: ImageArtifact) -> Image:
     """Converts Griptape ImageArtifact to Pillow Image."""
@@ -13,8 +15,6 @@ def image_artifact_to_pil(image_artifact: ImageArtifact) -> Image:
 
 def pil_to_image_artifact(pil_image: Image, directory_path: str = "") -> ImageUrlArtifact:
     """Converts Pillow Image to Griptape ImageArtifact."""
-    from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
-
     image_io = io.BytesIO()
     pil_image.save(image_io, "PNG")
     image_bytes = image_io.getvalue()
@@ -23,17 +23,7 @@ def pil_to_image_artifact(pil_image: Image, directory_path: str = "") -> ImageUr
 
     if directory_path:
         # Perform cleanup if needed before saving new file
-        cleanup_enabled = GriptapeNodes.ConfigManager().get_config_value(
-            "advanced_media_library.enable_directory_cleanup"
-        )
-        if cleanup_enabled:
-            static_files_directory = GriptapeNodes.ConfigManager().get_config_value(
-                "static_files_directory", default="staticfiles"
-            )
-            path = GriptapeNodes.ConfigManager().workspace_path / static_files_directory / directory_path
-
-            max_size_gb = GriptapeNodes.ConfigManager().get_config_value("advanced_media_library.max_directory_size_gb")
-            GriptapeNodes.OSManager().cleanup_directory_if_needed(full_directory_path=path, max_size_gb=max_size_gb)
+        cleanup_static_files_subdirectory(directory_path)
 
         dest = ProjectFileDestination.from_situation(
             filename=f"{directory_path}/image.png", situation="save_node_output"

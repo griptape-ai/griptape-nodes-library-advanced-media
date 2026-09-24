@@ -1,11 +1,16 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from transformers import AutoImageProcessor, AutoModelForDepthEstimation  # type: ignore[reportMissingImports]
+
 import logging
 
 import PIL.Image
-import torch  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
 from griptape_nodes.exe_types.param_components.log_parameter import LogParameter
-from transformers import AutoImageProcessor, AutoModelForDepthEstimation  # type: ignore[reportMissingImports]
 
 from diffusers_nodes_library.common.utils.huggingface_utils import model_cache  # type: ignore[reportMissingImports]
 
@@ -41,6 +46,8 @@ class DepthAnythingForDepthEstimationParameters:
         return self._huggingface_repo_parameter.get_repo_revision()
 
     def load_models(self) -> tuple[AutoImageProcessor, AutoModelForDepthEstimation]:
+        from transformers import AutoImageProcessor, AutoModelForDepthEstimation  # type: ignore[reportMissingImports]
+
         repo_id, revision = self.get_repo_revision()
 
         # Load models using model cache
@@ -62,6 +69,8 @@ class DepthAnythingForDepthEstimationParameters:
     def process_depth_estimation(
         self, image_processor: AutoImageProcessor, model: AutoModelForDepthEstimation, input_image_pil: PIL.Image.Image
     ) -> PIL.Image.Image:
+        import torch  # type: ignore[reportMissingImports]
+
         # Process the image
         inputs = image_processor(images=input_image_pil, return_tensors="pt")
 

@@ -3,7 +3,6 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-import diffusers  # type: ignore[reportMissingImports]
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
@@ -100,6 +99,8 @@ class AllegroPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
         Allegro returns ``.frames`` (not ``.images``), so the base image
         implementation cannot be used.
         """
+        import diffusers  # type: ignore[reportMissingImports]
+
         output = pipe(
             **self.get_pipe_kwargs(),
             output_type="pil",
@@ -120,6 +121,8 @@ class AllegroPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
 
     def latents_to_video_mp4(self, pipe: Any, latents: Any) -> Path:
         """Convert latents to video frames and export as an MP4 file."""
+        import diffusers  # type: ignore[reportMissingImports]
+
         with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file_obj:
             temp_file = Path(temp_file_obj.name)
 

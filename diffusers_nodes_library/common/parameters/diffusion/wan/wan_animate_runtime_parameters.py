@@ -3,8 +3,6 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-import diffusers  # type: ignore[reportMissingImports]
-import torch  # type: ignore[reportMissingImports]
 from griptape.artifacts import ImageUrlArtifact
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
@@ -210,6 +208,9 @@ class WanAnimatePipelineRuntimeParameters(WanVideoPipelineRuntimeParametersBase)
 
     def latents_to_video_mp4(self, pipe: Any, latents: Any) -> Path:
         """Convert latents to video frames and export as MP4 file."""
+        import diffusers  # type: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
+
         with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file_obj:
             temp_file = Path(temp_file_obj.name)
 

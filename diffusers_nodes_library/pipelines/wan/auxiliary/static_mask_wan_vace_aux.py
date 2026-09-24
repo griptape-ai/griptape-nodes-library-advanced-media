@@ -2,7 +2,6 @@ import logging
 import tempfile
 from pathlib import Path
 
-import diffusers  # type: ignore[reportMissingImports]
 import PIL.Image  # type: ignore[reportMissingImports]
 from griptape.artifacts import ImageUrlArtifact
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
@@ -88,6 +87,8 @@ class StaticMaskWanVaceAux(ControlNode):
         yield lambda: self._process()
 
     def _process(self) -> AsyncResult | None:
+        import diffusers  # type: ignore[reportMissingImports]
+
         input_video = self.get_parameter_value("input_video")
         mask_image = self.get_parameter_value("mask_image")
 
@@ -151,6 +152,8 @@ class StaticMaskWanVaceAux(ControlNode):
 
     def _export_frames_to_video(self, frames: list[Image.Image]) -> Path:
         """Export PIL frames to MP4 video file."""
+        import diffusers  # type: ignore[reportMissingImports]
+
         with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file:
             temp_path = Path(temp_file.name)
 

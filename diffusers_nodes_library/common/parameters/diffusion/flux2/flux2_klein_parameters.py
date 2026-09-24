@@ -1,7 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, ClassVar
+
+if TYPE_CHECKING:
+    import diffusers  # type: ignore[reportMissingImports]
+
 import logging
 
-import diffusers  # type: ignore[reportMissingImports]
-import torch  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.core_types import Parameter
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
@@ -33,6 +38,8 @@ FLUX_2_KLEIN_REPO_IDS = [
 
 
 class Flux2KleinPipelineParameters(DiffusionPipelineTypePipelineParameters):
+    PIPELINE_NAME: ClassVar[str] = "Flux2KleinPipeline"
+
     def __init__(self, node: BaseNode, *, list_all_models: bool = False):
         super().__init__(node)
         self._model_repo_parameter = HuggingFaceRepoParameter(
@@ -65,6 +72,8 @@ class Flux2KleinPipelineParameters(DiffusionPipelineTypePipelineParameters):
 
     @property
     def pipeline_class(self) -> type:
+        import diffusers  # type: ignore[reportMissingImports]
+
         return diffusers.Flux2KleinPipeline
 
     def validate_before_node_run(self) -> list[Exception] | None:
@@ -76,6 +85,9 @@ class Flux2KleinPipelineParameters(DiffusionPipelineTypePipelineParameters):
         return errors or None
 
     def build_pipeline(self) -> diffusers.Flux2KleinPipeline:
+        import diffusers  # type: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
+
         base_repo_id, base_revision = self._model_repo_parameter.get_repo_revision()
         use_small_decoder = self._node.get_parameter_value("use_small_decoder")
 

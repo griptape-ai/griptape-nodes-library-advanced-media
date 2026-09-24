@@ -1,10 +1,15 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import diffusers  # type: ignore[reportMissingImports]
+
 import logging
 import tempfile
 from pathlib import Path
 from typing import Any
 
-import diffusers  # type: ignore[reportMissingImports]
-import torch  # type: ignore[reportMissingImports]
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
@@ -180,6 +185,8 @@ class LTX2PipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
 
     def _process_pipeline_output(self, pipe: diffusers.LTX2Pipeline, callback_on_step_end: Any) -> None:
         """Process LTX2 video pipeline output."""
+        import diffusers  # type: ignore[reportMissingImports]
+
         output = pipe(
             **self.get_pipe_kwargs(),
             output_type="pil",
@@ -203,6 +210,9 @@ class LTX2PipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
 
     def latents_to_video_mp4(self, pipe: diffusers.LTX2Pipeline, latents: Any) -> Path:
         """Convert latents to video frames and export as MP4 file."""
+        import diffusers  # type: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
+
         with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file_obj:
             temp_file = Path(temp_file_obj.name)
 

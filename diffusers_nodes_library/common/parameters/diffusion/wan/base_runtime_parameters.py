@@ -3,9 +3,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-import diffusers  # type: ignore[reportMissingImports]
 import PIL.Image
-import torch  # type: ignore[reportMissingImports]
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.files.project_file import ProjectFileDestination
@@ -35,6 +33,8 @@ class WanVideoPipelineRuntimeParametersBase(DiffusionPipelineRuntimeParameters):
 
     def publish_output_image_preview_placeholder(self) -> None:
         """Override to publish video placeholder instead of image placeholder."""
+        import diffusers  # type: ignore[reportMissingImports]
+
         with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file:
             temp_path = Path(temp_file.name)
         try:
@@ -53,6 +53,8 @@ class WanVideoPipelineRuntimeParametersBase(DiffusionPipelineRuntimeParameters):
         Subclasses can override _get_pipeline_call_kwargs() to customize
         the kwargs passed to the pipeline call.
         """
+        import diffusers  # type: ignore[reportMissingImports]
+
         pipe_kwargs = self._get_pipeline_call_kwargs(pipe)
 
         output = pipe(
@@ -84,6 +86,9 @@ class WanVideoPipelineRuntimeParametersBase(DiffusionPipelineRuntimeParameters):
 
     def latents_to_video_mp4(self, pipe: Any, latents: Any) -> Path:
         """Convert latents to video frames and export as MP4 file."""
+        import diffusers  # type: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
+
         with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file_obj:
             temp_file = Path(temp_file_obj.name)
 

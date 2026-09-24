@@ -96,8 +96,12 @@ fix: ## Fix project.
 	@make format
 	@uv run ruff check --fix --unsafe-fixes
 
+.PHONY: test
+test: ## Run tests.
+	@uv run pytest tests
+
 .PHONY: check
-check: check/format check/lint check/types ## Run all checks.
+check: check/format check/lint check/types test ## Run all checks.
 
 .PHONY: check/format
 check/format:

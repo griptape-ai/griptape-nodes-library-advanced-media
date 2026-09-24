@@ -151,6 +151,9 @@ activemq-data/
 .env
 .envrc
 .venv
+# The engine builds the execution environment here. `.venv` above has no wildcard, so it does
+# not cover this name.
+.venv-exec
 env/
 venv/
 ENV/

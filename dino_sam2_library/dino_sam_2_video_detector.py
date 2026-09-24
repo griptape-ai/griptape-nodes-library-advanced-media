@@ -2,22 +2,15 @@ import logging
 import tempfile
 from pathlib import Path
 
-import diffusers  # type: ignore[reportMissingImports]
-import imageio  # type: ignore[reportMissingImports]
 import numpy as np
 import PIL.Image  # type: ignore[reportMissingImports]
-import torch  # type: ignore[reportMissingImports]
-import transformers  # type: ignore[reportMissingImports]
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import AsyncResult, ControlNode
 from griptape_nodes.exe_types.param_components.log_parameter import LogParameter
 from griptape_nodes.exe_types.param_components.project_file_parameter import ProjectFileParameter
-from huggingface_hub import hf_hub_download  # pyright: ignore[reportMissingImports]
-from sam2.build_sam import HF_MODEL_ID_TO_FILENAMES, build_sam2_video_predictor  # type: ignore[reportMissingImports]
 
 from diffusers_nodes_library.common.utils.huggingface_utils import model_cache  # type: ignore[reportMissingImports]
-from diffusers_nodes_library.common.utils.torch_utils import get_best_device  # type: ignore[reportMissingImports]
 from dino_sam2_library.dino_sam_2_detector_parameters import DinoSam2DetectorParameters
 from utils.video_utils import download_video_to_temp_file
 
@@ -132,6 +125,16 @@ class DinoSam2VideoDetector(ControlNode):
             local_video_path.unlink(missing_ok=True)
 
     def _run(self, local_video_path: Path) -> AsyncResult | None:  # noqa: PLR0915, C901, PLR0912
+        import diffusers  # type: ignore[reportMissingImports]
+        import imageio  # type: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
+        import transformers  # type: ignore[reportMissingImports]
+        from huggingface_hub import hf_hub_download  # pyright: ignore[reportMissingImports]
+        from sam2.build_sam import (  # type: ignore[reportMissingImports]
+            HF_MODEL_ID_TO_FILENAMES,
+            build_sam2_video_predictor,
+        )
+
         self.log_params.append_to_logs("Preparing models...\n")
 
         # -------------------------------------------------------------
@@ -166,7 +169,7 @@ class DinoSam2VideoDetector(ControlNode):
                 local_files_only=True,
             )
 
-            device = get_best_device()
+            device = torch.device(self.execution_device)
             sam2_predictor = build_sam2_video_predictor(
                 config_file=sam2_config_name, ckpt_path=sam2_ckpt_path, device=device
             )

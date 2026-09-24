@@ -1,13 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import torch  # type: ignore[reportMissingImports]
+    from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
+
 import contextlib
 import gc
 import logging
 import traceback
 
-import torch  # type: ignore[reportMissingImports]
-from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
-
 from diffusers_nodes_library.common.utils.torch_utils import (
-    get_best_device,
     get_free_cuda_memory,
     get_max_memory_footprint,
     get_total_memory_footprint,
@@ -56,6 +60,8 @@ def _check_mps_memory_sufficient(
     pipe: DiffusionPipeline,
 ) -> bool:
     """Check if MPS device has sufficient memory for the pipeline."""
+    import torch  # type: ignore[reportMissingImports]
+
     model_memory = get_total_memory_footprint(pipe, get_pipeline_component_names(pipe))
     recommended_max_memory = torch.mps.recommended_max_memory()
     free_memory = recommended_max_memory - torch.mps.current_allocated_memory()
@@ -67,6 +73,8 @@ def _log_memory_info(
     device: torch.device,
 ) -> None:
     """Log memory information for the device."""
+    import torch  # type: ignore[reportMissingImports]
+
     model_memory = MEMORY_HEADROOM_FACTOR * get_total_memory_footprint(pipe, get_pipeline_component_names(pipe))
 
     if device.type == "cuda":
@@ -118,6 +126,8 @@ def _automatic_optimize_diffusion_pipeline(  # noqa: C901 PLR0911 PLR0912 PLR091
     requires_device_map: bool = False,
 ) -> None:
     """Optimize pipeline memory footprint with incremental VRAM checking."""
+    import torch  # type: ignore[reportMissingImports]
+
     if device.type == "cuda":
         _log_memory_info(pipe, device)
 
@@ -232,6 +242,8 @@ def _manual_optimize_diffusion_pipeline(  # noqa: C901 PLR0912 PLR0913
     supports_layerwise_casting: bool = True,
     requires_device_map: bool = False,
 ) -> None:
+    import torch  # type: ignore[reportMissingImports]
+
     if quantization_mode != "None":
         if is_prequantized:
             logger.info("Pipeline is pre-quantized; skipping quantization step")
@@ -285,6 +297,7 @@ def _manual_optimize_diffusion_pipeline(  # noqa: C901 PLR0912 PLR0913
 
 def optimize_diffusion_pipeline(  # noqa: PLR0913
     pipe: DiffusionPipeline,
+    execution_device: str,
     *,
     memory_optimization_strategy: str = "Manual",
     attention_slicing: bool = False,
@@ -296,8 +309,14 @@ def optimize_diffusion_pipeline(  # noqa: PLR0913
     supports_layerwise_casting: bool = True,
     requires_device_map: bool = False,
 ) -> None:
-    """Optimize pipeline performance and memory."""
-    device = get_best_device()
+    """Optimize pipeline performance and memory.
+
+    Args:
+        execution_device: the device the engine chose for this node, as "cuda", "mps" or "cpu".
+    """
+    import torch  # type: ignore[reportMissingImports]
+
+    device = torch.device(execution_device)
 
     if memory_optimization_strategy == "Automatic":
         _automatic_optimize_diffusion_pipeline(
@@ -368,6 +387,8 @@ def cleanup_memory_caches() -> None:
     calls raise, and a failure here must not pre-empt the caller's own recovery. A
     failure is still logged, since silently reclaiming nothing is hard to diagnose.
     """
+    import torch  # type: ignore[reportMissingImports]
+
     try:
         gc.collect()
         if torch.cuda.is_available():
@@ -386,6 +407,8 @@ def is_out_of_memory_error(exc: BaseException) -> bool:
     ("MPS backend out of memory"), so the message is checked as a fallback. MemoryError
     counts too: CPU-offloaded pipelines hold their weights in host RAM.
     """
+    import torch  # type: ignore[reportMissingImports]
+
     if isinstance(exc, torch.cuda.OutOfMemoryError | MemoryError):
         return True
     # A custom exception may raise from __str__; an unreadable message is not a match.

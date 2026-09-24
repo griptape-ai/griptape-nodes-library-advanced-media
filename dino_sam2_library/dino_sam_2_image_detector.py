@@ -3,19 +3,13 @@ import logging
 import numpy as np
 import PIL.Image  # type: ignore[reportMissingImports]
 import PIL.ImageDraw  # type: ignore[reportMissingImports]
-import torch  # type: ignore[reportMissingImports]
-import transformers  # type: ignore[reportMissingImports]
 from griptape.artifacts import ImageUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import AsyncResult, ControlNode
 from griptape_nodes.exe_types.param_components.log_parameter import LogParameter
-from huggingface_hub import hf_hub_download  # pyright: ignore[reportMissingImports]
 from PIL.Image import Image  # type: ignore[reportMissingImports]
-from sam2.build_sam import HF_MODEL_ID_TO_FILENAMES, build_sam2  # type: ignore[reportMissingImports]
-from sam2.sam2_image_predictor import SAM2ImagePredictor  # type: ignore[reportMissingImports]
 
 from diffusers_nodes_library.common.utils.huggingface_utils import model_cache  # type: ignore[reportMissingImports]
-from diffusers_nodes_library.common.utils.torch_utils import get_best_device
 from dino_sam2_library.dino_sam_2_detector_parameters import DinoSam2DetectorParameters
 from pillow_nodes_library.utils import (  # type: ignore[reportMissingImports]
     image_artifact_to_pil,  # type: ignore[reportMissingImports]
@@ -125,6 +119,12 @@ class DinoSam2ImageDetector(ControlNode):
         yield lambda: self._process()
 
     def _process(self) -> AsyncResult | None:
+        import torch  # type: ignore[reportMissingImports]
+        import transformers  # type: ignore[reportMissingImports]
+        from huggingface_hub import hf_hub_download  # pyright: ignore[reportMissingImports]
+        from sam2.build_sam import HF_MODEL_ID_TO_FILENAMES, build_sam2  # type: ignore[reportMissingImports]
+        from sam2.sam2_image_predictor import SAM2ImagePredictor  # type: ignore[reportMissingImports]
+
         self.log_params.append_to_logs("Preparing models...\n")
 
         # -------------------------------------------------------------
@@ -162,7 +162,7 @@ class DinoSam2ImageDetector(ControlNode):
                 mask_threshold=self.get_mask_threshold(),
             )
 
-            device = get_best_device()
+            device = torch.device(self.execution_device)
             dino_model.to(device)
             sam2_model.to(device)
 

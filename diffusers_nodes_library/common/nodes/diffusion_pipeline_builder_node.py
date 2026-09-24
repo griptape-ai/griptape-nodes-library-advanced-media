@@ -158,6 +158,9 @@ class DiffusionPipelineBuilderNode(ParameterConnectionPreservationMixin, Control
     def validate_before_node_run(self) -> list[Exception] | None:
         return self.params.pipeline_type_parameters.pipeline_type_pipeline_params.validate_before_node_run()
 
+    def validate_in_execution_environment(self) -> list[Exception] | None:
+        return self.params.pipeline_type_parameters.pipeline_type_pipeline_params.validate_in_execution_environment()
+
     def preprocess(self) -> None:
         self.log_params.clear_logs()
 
@@ -203,6 +206,7 @@ class DiffusionPipelineBuilderNode(ParameterConnectionPreservationMixin, Control
             requires_device_map = pipeline_params.requires_device_map()
             optimize_diffusion_pipeline(
                 pipe=pipe,
+                execution_device=self.execution_device,
                 is_prequantized=is_prequantized,
                 supports_layerwise_casting=supports_layerwise_casting,
                 requires_device_map=requires_device_map,

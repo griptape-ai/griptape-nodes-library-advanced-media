@@ -1,7 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, ClassVar
+
+if TYPE_CHECKING:
+    import diffusers  # type: ignore[reportMissingImports]
+
 import logging
 
-import diffusers  # type: ignore[reportMissingImports]
-import torch  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
 
@@ -13,6 +18,8 @@ logger = logging.getLogger("diffusers_nodes_library")
 
 
 class WanVideoToVideoPipelineParameters(DiffusionPipelineTypePipelineParameters):
+    PIPELINE_NAME: ClassVar[str] = "WanVideoToVideoPipeline"
+
     def __init__(self, node: BaseNode, *, list_all_models: bool = False):
         super().__init__(node)
         self._model_repo_parameter = HuggingFaceRepoParameter(
@@ -38,6 +45,8 @@ class WanVideoToVideoPipelineParameters(DiffusionPipelineTypePipelineParameters)
 
     @property
     def pipeline_class(self) -> type:
+        import diffusers  # type: ignore[reportMissingImports]
+
         return diffusers.WanVideoToVideoPipeline
 
     def validate_before_node_run(self) -> list[Exception] | None:
@@ -49,6 +58,9 @@ class WanVideoToVideoPipelineParameters(DiffusionPipelineTypePipelineParameters)
         return errors or None
 
     def build_pipeline(self) -> diffusers.WanVideoToVideoPipeline:
+        import diffusers  # type: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
+
         repo_id, revision = self._model_repo_parameter.get_repo_revision()
         # Use float32 instead of bfloat16 as a workaround for diffusers bug:
         # WanVideoToVideoPipeline hardcodes video preprocessing to float32,

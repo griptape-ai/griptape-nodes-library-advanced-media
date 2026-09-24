@@ -1,8 +1,13 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
+
 import logging
 from typing import Any
 
-import torch  # type: ignore[reportMissingImports]
-from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
 
@@ -105,6 +110,8 @@ class Audioldm2PipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
         return kwargs
 
     def get_pipe_kwargs(self) -> dict:
+        import torch  # type: ignore[reportMissingImports]
+
         return {
             **self._get_pipe_kwargs(),
             "num_inference_steps": int(self._node.get_parameter_value("num_inference_steps")),

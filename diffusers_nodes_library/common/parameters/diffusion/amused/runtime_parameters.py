@@ -1,8 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import diffusers  # type: ignore[reportMissingImports]
+    import torch  # type: ignore[reportMissingImports]
+
 import logging
 
-import diffusers  # type: ignore[reportMissingImports]
 import PIL.Image
-import torch  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.core_types import Parameter
 from griptape_nodes.exe_types.node_types import BaseNode
 from PIL.Image import Image
@@ -76,6 +82,8 @@ class AmusedPipelineRuntimeParameters(AmusedPipelineRuntimeParametersBase):
 
     def latents_to_image_pil(self, pipe: diffusers.AmusedPipeline, latents: torch.Tensor) -> Image:
         """Convert latents to PIL image using the pipeline's VQ-VAE decoder."""
+        import torch  # type: ignore[reportMissingImports]
+
         # Handle potential upcasting needed for float16
         needs_upcasting = pipe.vqvae.dtype == torch.float16 and pipe.vqvae.config.force_upcast
 

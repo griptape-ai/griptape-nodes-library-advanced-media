@@ -1,13 +1,25 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, ClassVar
+
+if TYPE_CHECKING:
+    import diffusers  # type: ignore[reportMissingImports]
+
 import logging
 from abc import ABC, abstractmethod
 
-import diffusers  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.node_types import BaseNode
 
 logger = logging.getLogger("diffusers_nodes_library")
 
 
 class DiffusionPipelineTypePipelineParameters(ABC):
+    # Every concrete subclass must declare the name of the pipeline class it builds. The name
+    # has to be available on the orchestrator, which has no diffusers, so it cannot be read off
+    # `pipeline_class.__name__`: `pipeline_name` feeds the config hash that the builder node
+    # stamps into its output during `after_value_set`.
+    PIPELINE_NAME: ClassVar[str]
+
     def __init__(self, node: BaseNode, *, list_all_models: bool = False):
         self._node = node
         self._list_all_models = list_all_models
@@ -31,11 +43,15 @@ class DiffusionPipelineTypePipelineParameters(ABC):
 
     @property
     def pipeline_name(self) -> str:
-        return self.pipeline_class.__name__
+        return self.PIPELINE_NAME
 
     @abstractmethod
     def validate_before_node_run(self) -> list[Exception] | None:
         raise NotImplementedError
+
+    def validate_in_execution_environment(self) -> list[Exception] | None:
+        """Checks that need the real diffusers classes, run where the pipeline is built."""
+        return None
 
     @abstractmethod
     def build_pipeline(self) -> diffusers.DiffusionPipeline:

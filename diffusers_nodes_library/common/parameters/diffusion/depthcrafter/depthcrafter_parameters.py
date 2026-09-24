@@ -1,23 +1,26 @@
-import logging
+from __future__ import annotations
 
-import torch  # type: ignore[reportMissingImports]
+import logging
+from typing import TYPE_CHECKING, ClassVar
+
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
 
-from diffusers_nodes_library.common.parameters.diffusion.depthcrafter.depthcrafter_pipeline import (
-    DepthCrafterVideoDiffusionPipeline,
-)
-from diffusers_nodes_library.common.parameters.diffusion.depthcrafter.unet import (
-    DiffusersUNetSpatioTemporalConditionModelDepthCrafter,
-)
 from diffusers_nodes_library.common.parameters.diffusion.pipeline_type_parameters import (
     DiffusionPipelineTypePipelineParameters,
 )
+
+if TYPE_CHECKING:
+    from diffusers_nodes_library.common.parameters.diffusion.depthcrafter.depthcrafter_pipeline import (
+        DepthCrafterVideoDiffusionPipeline,
+    )
 
 logger = logging.getLogger("diffusers_nodes_library")
 
 
 class DepthCrafterPipelineParameters(DiffusionPipelineTypePipelineParameters):
+    PIPELINE_NAME: ClassVar[str] = "DepthCrafterVideoDiffusionPipeline"
+
     def __init__(self, node: BaseNode, *, list_all_models: bool = False):
         super().__init__(node)
         self._unet_model_repo_parameter = HuggingFaceRepoParameter(
@@ -53,6 +56,10 @@ class DepthCrafterPipelineParameters(DiffusionPipelineTypePipelineParameters):
 
     @property
     def pipeline_class(self) -> type:
+        from diffusers_nodes_library.common.parameters.diffusion.depthcrafter.depthcrafter_pipeline import (
+            DepthCrafterVideoDiffusionPipeline,
+        )
+
         return DepthCrafterVideoDiffusionPipeline
 
     def validate_before_node_run(self) -> list[Exception] | None:
@@ -68,6 +75,15 @@ class DepthCrafterPipelineParameters(DiffusionPipelineTypePipelineParameters):
         return errors or None
 
     def build_pipeline(self) -> DepthCrafterVideoDiffusionPipeline:
+        import torch  # type: ignore[reportMissingImports]
+
+        from diffusers_nodes_library.common.parameters.diffusion.depthcrafter.depthcrafter_pipeline import (
+            DepthCrafterVideoDiffusionPipeline,
+        )
+        from diffusers_nodes_library.common.parameters.diffusion.depthcrafter.unet import (
+            DiffusersUNetSpatioTemporalConditionModelDepthCrafter,
+        )
+
         repo_id, revision = self._model_repo_parameter.get_repo_revision()
         unet_repo_id, unet_revision = self._unet_model_repo_parameter.get_repo_revision()
 

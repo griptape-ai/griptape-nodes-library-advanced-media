@@ -1,13 +1,13 @@
+from __future__ import annotations
+
 import logging
 import warnings
+from typing import TYPE_CHECKING
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")  # Silence noisy but harmless warnings from controlnet_aux
+if TYPE_CHECKING:
     import controlnet_aux  # type: ignore[reportMissingImports]
 
-import huggingface_hub  # pyright: ignore[reportMissingImports]
 import PIL.Image
-import torch  # type: ignore[reportMissingImports]
 from griptape.artifacts import ImageUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import AsyncResult, ControlNode
@@ -65,6 +65,13 @@ class AnylineDetector(ControlNode):
         self.publish_update_to_parameter("output_image", pil_to_image_artifact(preview_placeholder_image))
 
     def get_anyline(self) -> controlnet_aux.AnylineDetector:
+        import huggingface_hub  # pyright: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")  # Silence noisy but harmless warnings from controlnet_aux
+            import controlnet_aux  # type: ignore[reportMissingImports]
+
         repo_id, revision = self._huggingface_repo_parameter.get_repo_revision()
         model_path = huggingface_hub.hf_hub_download(
             repo_id=repo_id,

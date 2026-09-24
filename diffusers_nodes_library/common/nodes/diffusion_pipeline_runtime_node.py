@@ -1,7 +1,13 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
+
 import logging
 from typing import Any, ClassVar
 
-from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.core_types import Parameter
 from griptape_nodes.exe_types.node_types import AsyncResult, BaseNode, ControlNode
 from griptape_nodes.exe_types.param_components.log_parameter import LogParameter
@@ -120,20 +126,14 @@ class DiffusionPipelineRuntimeNode(ParameterConnectionPreservationMixin, Control
         diffusion_pipeline_hash = self.get_parameter_value("pipeline")
         pipeline = model_cache.get_pipeline(diffusion_pipeline_hash)
         if pipeline is None:
-            # Attempt to rebuild the pipeline from the connected builder node if not in the cache, this should only happen in exceptional cases: https://github.com/griptape-ai/griptape-nodes/issues/2578
-            try:
-                connections = GriptapeNodes.FlowManager().get_connections()
-                node_connections = connections.incoming_index.get(self.name)
-                pipeline_connection_id = node_connections.get("pipeline") if node_connections else None
-                pipeline_connection = (
-                    connections.connections.get(pipeline_connection_id[0]) if pipeline_connection_id else None
-                )
-                builder_node = pipeline_connection.source_node if pipeline_connection else None
-                return model_cache.get_or_build_pipeline(diffusion_pipeline_hash, builder_node._build_pipeline)  # type: ignore[reportAttributeAccessIssue, reportOptionalMemberAccess]
-            except Exception as e:
-                logger.error("Error while attempting to rebuild pipeline from builder node: %s", e)
-                error_msg = f"Pipeline with config hash '{diffusion_pipeline_hash}' not found in cache and could not be rebuilt: {model_cache._pipeline_cache.keys()}"
-                raise RuntimeError(error_msg) from e
+            # A cache miss cannot be repaired from here: the connection graph and the builder node
+            # both live on the orchestrator, which has no diffusers. Only running the builder node
+            # fills this cache.
+            msg = (
+                f"Attempted to run {self.name} with pipeline '{diffusion_pipeline_hash}'. "
+                f"Failed because that pipeline has not been built. Run the connected pipeline builder node first."
+            )
+            raise RuntimeError(msg)
         return pipeline
 
     def after_incoming_connection_removed(

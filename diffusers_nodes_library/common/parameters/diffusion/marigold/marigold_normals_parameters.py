@@ -1,7 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, ClassVar
+
+if TYPE_CHECKING:
+    import diffusers  # type: ignore[reportMissingImports]
+
 import logging
 
-import diffusers  # type: ignore[reportMissingImports]
-import torch  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
 
@@ -19,6 +24,8 @@ MARIGOLD_NORMALS_REPO_IDS = [
 
 
 class MarigoldNormalsPipelineParameters(DiffusionPipelineTypePipelineParameters):
+    PIPELINE_NAME: ClassVar[str] = "MarigoldNormalsPipeline"
+
     def __init__(self, node: BaseNode, *, list_all_models: bool = False):
         super().__init__(node)
         self._model_repo_parameter = HuggingFaceRepoParameter(
@@ -41,6 +48,8 @@ class MarigoldNormalsPipelineParameters(DiffusionPipelineTypePipelineParameters)
 
     @property
     def pipeline_class(self) -> type:
+        import diffusers  # type: ignore[reportMissingImports]
+
         return diffusers.MarigoldNormalsPipeline
 
     def validate_before_node_run(self) -> list[Exception] | None:
@@ -54,6 +63,9 @@ class MarigoldNormalsPipelineParameters(DiffusionPipelineTypePipelineParameters)
         return None
 
     def build_pipeline(self) -> diffusers.MarigoldNormalsPipeline:
+        import diffusers  # type: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
+
         base_repo_id, base_revision = self._model_repo_parameter.get_repo_revision()
 
         return diffusers.MarigoldNormalsPipeline.from_pretrained(

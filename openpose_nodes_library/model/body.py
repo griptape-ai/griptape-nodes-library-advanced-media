@@ -16,7 +16,7 @@ MIN_SCORE_RATIO = 0.4
 
 
 class Body:
-    def __init__(self, state_dict: dict[str, Any], model_type: str = "coco") -> None:
+    def __init__(self, state_dict: dict[str, Any], model_type: str = "coco", *, device: str) -> None:
         if model_type == "coco":
             self.model = BodyPoseModel()
             self.njoint = 19
@@ -31,15 +31,9 @@ class Body:
             self.npaf = 38
         self.model_type = model_type
 
-        # Use MPS if available (Apple Silicon), otherwise CUDA, otherwise CPU
-        if torch.backends.mps.is_available():
-            self.device = torch.device("mps")
-            self.model = self.model.to(self.device)
-        elif torch.cuda.is_available():
-            self.device = torch.device("cuda")
-            self.model = self.model.cuda()
-        else:
-            self.device = torch.device("cpu")
+        # The engine chose this device for the node that owns the model; probing torch would override it.
+        self.device = torch.device(device)
+        self.model = self.model.to(self.device)
 
         model_dict = util.transfer(self.model, state_dict)
         self.model.load_state_dict(model_dict)
@@ -353,7 +347,7 @@ if __name__ == "__main__":
 
     # Load state dict from checkpoint file
     state_dict = torch.load(model_path, map_location="cpu")
-    body_estimation = Body(state_dict, model_type)
+    body_estimation = Body(state_dict, model_type, device="cpu")
 
     test_image = "./images/ski.jpg"
     ori_img = cv2.imread(test_image)  # B,G,R order

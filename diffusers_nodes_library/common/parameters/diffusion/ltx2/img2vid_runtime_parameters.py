@@ -1,12 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import diffusers  # type: ignore[reportMissingImports]
+
 import logging
 import tempfile
 from pathlib import Path
 from typing import Any
 
-import diffusers  # type: ignore[reportMissingImports]
 import numpy as np
 import PIL.Image
-import torch  # type: ignore[reportMissingImports]
 from griptape.artifacts import ImageUrlArtifact
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
@@ -206,6 +211,8 @@ class LTX2ImageToVideoPipelineRuntimeParameters(DiffusionPipelineRuntimeParamete
 
     def _process_pipeline_output(self, pipe: diffusers.LTX2ImageToVideoPipeline, callback_on_step_end: Any) -> None:
         """Process LTX2 image-to-video pipeline output."""
+        import diffusers  # type: ignore[reportMissingImports]
+
         # Get and prepare input image
         image = self.get_input_image_pil()
         if self.get_auto_resize_input_image():
@@ -243,6 +250,8 @@ class LTX2ImageToVideoPipelineRuntimeParameters(DiffusionPipelineRuntimeParamete
                 temp_file.unlink()
 
     def publish_output_video_preview_placeholder(self) -> None:
+        import diffusers  # type: ignore[reportMissingImports]
+
         # Create a small black video placeholder
         with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file:
             temp_path = Path(temp_file.name)
@@ -307,6 +316,9 @@ class LTX2ImageToVideoPipelineRuntimeParameters(DiffusionPipelineRuntimeParamete
 
     def latents_to_video_mp4(self, pipe: Any, latents: Any) -> Path:
         """Convert latents to video frames and export as MP4 file."""
+        import diffusers  # type: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
+
         with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file_obj:
             temp_file = Path(temp_file_obj.name)
 

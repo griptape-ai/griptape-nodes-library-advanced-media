@@ -3,7 +3,6 @@ import tempfile
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-import cv2  # type: ignore[reportMissingImports]
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.files.file import File
 
@@ -69,6 +68,8 @@ def get_video_fps(video_path: Path, default_fps: float = 30.0) -> float:
     Returns:
         The video's FPS, or default_fps if unable to determine
     """
+    import cv2  # type: ignore[reportMissingImports]
+
     cap = cv2.VideoCapture(str(video_path))
     if not cap.isOpened():
         return default_fps

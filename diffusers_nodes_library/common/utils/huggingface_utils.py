@@ -2,9 +2,6 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from huggingface_hub import scan_cache_dir  # pyright: ignore[reportMissingImports]
-from huggingface_hub.constants import HF_HUB_CACHE
-
 from diffusers_nodes_library.common.utils.pipeline_utils import cleanup_memory_caches, clear_diffusion_pipeline
 
 logger = logging.getLogger("griptape_nodes")
@@ -12,6 +9,9 @@ logger = logging.getLogger("griptape_nodes")
 
 def list_all_repo_revisions_in_cache() -> list[tuple[str, str]]:
     """Returns a list of (repo_id, revision) tuples for all repos in the huggingface cache."""
+    from huggingface_hub import scan_cache_dir  # pyright: ignore[reportMissingImports]
+    from huggingface_hub.constants import HF_HUB_CACHE
+
     # Use quick scan for diffuser repos, fallback to scan_cache_dir only on errors
     try:
         repos = quick_scan_diffuser_repos(HF_HUB_CACHE)
@@ -32,6 +32,9 @@ def list_all_repo_revisions_in_cache() -> list[tuple[str, str]]:
 
 def list_repo_revisions_in_cache(repo_id: str) -> list[tuple[str, str]]:
     """Returns a list of (repo_id, revision) tuples matching repo_id in the huggingface cache."""
+    from huggingface_hub import scan_cache_dir  # pyright: ignore[reportMissingImports]
+    from huggingface_hub.constants import HF_HUB_CACHE
+
     # Use quick scan for diffuser repos, fallback to scan_cache_dir only on errors
     try:
         repos = quick_scan_diffuser_repos(HF_HUB_CACHE)
@@ -53,6 +56,9 @@ def list_repo_revisions_in_cache(repo_id: str) -> list[tuple[str, str]]:
 
 def list_repo_revisions_with_file_in_cache(repo_id: str, file: str) -> list[tuple[str, str]]:
     """Returns a list of (repo_id, revision) tuples matching repo_id in the huggingface cache if it contains file."""
+    from huggingface_hub import scan_cache_dir  # pyright: ignore[reportMissingImports]
+    from huggingface_hub.constants import HF_HUB_CACHE
+
     # Use quick scan for diffuser repos, check if file exists
     try:
         repos = quick_scan_diffuser_repos(HF_HUB_CACHE)

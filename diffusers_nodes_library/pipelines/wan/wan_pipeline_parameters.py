@@ -1,10 +1,15 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import diffusers  # type: ignore[reportMissingImports]
+
 import logging
 import tempfile
 from pathlib import Path
 from typing import Any
 
-import diffusers  # type: ignore[reportMissingImports]
-import torch  # type: ignore[reportMissingImports]
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
@@ -196,6 +201,8 @@ class WanPipelineParameters:
         return float(self._node.get_parameter_value("guidance_scale"))
 
     def get_pipe_kwargs(self) -> dict:
+        import torch  # type: ignore[reportMissingImports]
+
         return {
             "prompt": self.get_prompt(),
             "negative_prompt": self.get_negative_prompt(),
@@ -210,6 +217,9 @@ class WanPipelineParameters:
 
     def latents_to_video_mp4(self, pipe: diffusers.WanPipeline, latents: Any) -> Path:
         """Convert latents to video frames and export as MP4 file."""
+        import diffusers  # type: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
+
         self.get_num_frames()
         self.get_width()
         self.get_height()

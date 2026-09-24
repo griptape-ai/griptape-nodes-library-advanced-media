@@ -1,15 +1,18 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import spandrel  # type: ignore[reportMissingImports]
+    import torch  # type: ignore[reportMissingImports]
+    import torch.nn.functional  # type: ignore[reportMissingImports]
+
 import gc
 import logging
 
 import numpy as np
 import PIL.Image
-import spandrel  # type: ignore[reportMissingImports]
-import torch  # type: ignore[reportMissingImports]
-import torch.nn.functional  # type: ignore[reportMissingImports]
-from huggingface_hub import hf_hub_download  # pyright: ignore[reportMissingImports]
 from PIL.Image import Image
-
-from diffusers_nodes_library.common.utils.torch_utils import get_best_device
 
 logger = logging.getLogger("spandrel_nodes_library")
 
@@ -20,7 +23,12 @@ class SpandrelPipeline:
         self.device = device
 
     @classmethod
-    def from_hf_file(cls, repo_id: str, revision: str, filename: str) -> "SpandrelPipeline":
+    def from_hf_file(cls, repo_id: str, revision: str, filename: str, execution_device: str) -> SpandrelPipeline:
+        import spandrel  # type: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
+        import torch.nn.functional  # type: ignore[reportMissingImports]
+        from huggingface_hub import hf_hub_download  # pyright: ignore[reportMissingImports]
+
         model_path = hf_hub_download(
             repo_id=repo_id,
             revision=revision,
@@ -31,13 +39,16 @@ class SpandrelPipeline:
         sd = torch.load(model_path, map_location="cpu")
         model = spandrel.ModelLoader().load_from_state_dict(sd).eval()
 
-        device = get_best_device()
+        device = torch.device(execution_device)
         model = model.to(device)
         logger.info("SpandrelPipeline loaded on device: %s", device)
 
         return SpandrelPipeline(model, device)
 
     def __call__(self, input_image_pil: Image, *_) -> Image:
+        import torch  # type: ignore[reportMissingImports]
+        import torch.nn.functional  # type: ignore[reportMissingImports]
+
         # Will fail if not RGB (like RGBA), I think it actually just
         # needs to be 3 channels, not sure what will happen if you
         # do for example BurGeR.
@@ -57,6 +68,9 @@ class SpandrelPipeline:
 
 def clear_spandrel_pipeline(pipe: SpandrelPipeline) -> None:
     """Clear spandrel pipeline from memory."""
+    import torch  # type: ignore[reportMissingImports]
+    import torch.nn.functional  # type: ignore[reportMissingImports]
+
     if pipe.model is not None:
         pipe.model.to("cpu")
         del pipe.model
@@ -92,6 +106,9 @@ def pil_to_tensor(image_pil: Image) -> torch.Tensor:
     Returns:
         Torch Tensor of shape [batch_size, height, width, channels] where batch_size is always 1 (single image)
     """
+    import torch  # type: ignore[reportMissingImports]
+    import torch.nn.functional  # type: ignore[reportMissingImports]
+
     image_np = np.array(image_pil).astype(np.float32) / 255.0
     image_pt = torch.from_numpy(image_np).unsqueeze(0)
     # If the image is grayscale, add a channel dimension

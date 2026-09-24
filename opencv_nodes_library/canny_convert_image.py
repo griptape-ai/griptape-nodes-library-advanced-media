@@ -1,7 +1,6 @@
 import logging
 from typing import Any
 
-import cv2  # type: ignore[reportMissingImports]
 import numpy as np
 import PIL.Image
 from griptape.artifacts import ImageUrlArtifact
@@ -84,6 +83,8 @@ class CannyConvertImage(ControlNode):
         cmd.run_node(node_name=self.name)
 
     def _process(self) -> AsyncResult | None:
+        import cv2  # type: ignore[reportMissingImports]
+
         input_image_artifact = self.get_parameter_value("input_image")
         lower_threshold = float(self.get_parameter_value("lower_threshold"))
         upper_threshold = float(self.get_parameter_value("upper_threshold"))

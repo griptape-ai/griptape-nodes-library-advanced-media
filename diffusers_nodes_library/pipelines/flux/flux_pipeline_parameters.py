@@ -1,9 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import diffusers  # type: ignore[reportMissingImports]
+
 import logging
 from typing import Any
 
-import diffusers  # type: ignore[reportMissingImports]
 import PIL.Image
-import torch  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
@@ -199,6 +204,8 @@ class FluxPipelineParameters:
         return float(self._node.get_parameter_value("guidance_scale"))
 
     def get_pipe_kwargs(self) -> dict:
+        import torch  # type: ignore[reportMissingImports]
+
         return {
             "prompt": self.get_prompt(),
             "prompt_2": self.get_prompt_2(),

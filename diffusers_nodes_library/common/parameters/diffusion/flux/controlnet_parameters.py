@@ -1,8 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, ClassVar
+
+if TYPE_CHECKING:
+    import diffusers  # type: ignore[reportMissingImports]
+
 import logging
 
-import diffusers  # type: ignore[reportMissingImports]
-import torch  # type: ignore[reportMissingImports]
-import transformers  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
 
@@ -14,6 +18,8 @@ logger = logging.getLogger("diffusers_nodes_library")
 
 
 class FluxControlNetPipelineParameters(DiffusionPipelineTypePipelineParameters):
+    PIPELINE_NAME: ClassVar[str] = "FluxControlNetPipeline"
+
     def __init__(self, node: BaseNode, *, list_all_models: bool = False):
         super().__init__(node)
         self._model_repo_parameter = HuggingFaceRepoParameter(
@@ -78,6 +84,8 @@ class FluxControlNetPipelineParameters(DiffusionPipelineTypePipelineParameters):
 
     @property
     def pipeline_class(self) -> type:
+        import diffusers  # type: ignore[reportMissingImports]
+
         return diffusers.FluxControlNetPipeline
 
     def validate_before_node_run(self) -> list[Exception] | None:
@@ -101,6 +109,10 @@ class FluxControlNetPipelineParameters(DiffusionPipelineTypePipelineParameters):
         return errors or None
 
     def build_pipeline(self) -> diffusers.FluxControlNetPipeline:
+        import diffusers  # type: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
+        import transformers  # type: ignore[reportMissingImports]
+
         text_encoder_repo_id, text_encoder_revision = self._text_encoder_repo_parameter.get_repo_revision()
         text_encoder_2_repo_id, text_encoder_2_revision = self._text_encoder_2_repo_parameter.get_repo_revision()
         controlnet_repo_id, controlnet_revision = self._controlnet_repo_parameter.get_repo_revision()

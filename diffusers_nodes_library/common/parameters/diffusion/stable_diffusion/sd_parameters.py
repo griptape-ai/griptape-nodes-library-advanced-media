@@ -1,7 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, ClassVar
+
+if TYPE_CHECKING:
+    import diffusers  # type: ignore[reportMissingImports]
+
 import logging
 
-import diffusers  # type: ignore[reportMissingImports]
-import torch  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.huggingface.huggingface_repo_parameter import HuggingFaceRepoParameter
 
@@ -13,6 +18,8 @@ logger = logging.getLogger("diffusers_nodes_library")
 
 
 class StableDiffusionPipelineParameters(DiffusionPipelineTypePipelineParameters):
+    PIPELINE_NAME: ClassVar[str] = "StableDiffusionPipeline"
+
     def __init__(self, node: BaseNode, *, list_all_models: bool = False):
         super().__init__(node)
         self._huggingface_repo_parameter = HuggingFaceRepoParameter(
@@ -43,6 +50,8 @@ class StableDiffusionPipelineParameters(DiffusionPipelineTypePipelineParameters)
 
     @property
     def pipeline_class(self) -> type:
+        import diffusers  # type: ignore[reportMissingImports]
+
         return diffusers.StableDiffusionPipeline
 
     def validate_before_node_run(self) -> list[Exception] | None:
@@ -50,6 +59,9 @@ class StableDiffusionPipelineParameters(DiffusionPipelineTypePipelineParameters)
         return errors or None
 
     def build_pipeline(self) -> diffusers.StableDiffusionPipeline:
+        import diffusers  # type: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
+
         repo_id, revision = self._huggingface_repo_parameter.get_repo_revision()
         return diffusers.StableDiffusionPipeline.from_pretrained(
             pretrained_model_name_or_path=repo_id,

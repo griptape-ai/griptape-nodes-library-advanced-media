@@ -1,10 +1,16 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
+
 import logging
 import math
 from abc import ABC
 from typing import Any
 
 import PIL.Image
-from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
 from griptape.artifacts import ImageUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter
 from griptape_nodes.exe_types.node_types import BaseNode
@@ -350,7 +356,12 @@ class UpscalePipelineRuntimeParameters(DiffusionPipelineRuntimeParameters, ABC):
         with self._node.log_params.append_profile_to_logs("Loading model metadata"):  # type: ignore[reportAttributeAccessIssue]
             repo, revision = self._upscale_model_repo_parameter.get_repo_revision()
             filename = self._upscale_model_repo_parameter.get_repo_filename()
-            pipe = SpandrelPipeline.from_hf_file(repo_id=repo, revision=revision, filename=filename)
+            pipe = SpandrelPipeline.from_hf_file(
+                repo_id=repo,
+                revision=revision,
+                filename=filename,
+                execution_device=self._node.execution_device,
+            )
 
         tiling_image_processor = TilingImageProcessor(
             pipe=pipe,

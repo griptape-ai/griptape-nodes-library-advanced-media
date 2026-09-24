@@ -4,7 +4,6 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 import PIL.Image
-import torch  # type: ignore[reportMissingImports]
 from griptape.artifacts import ImageUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 
@@ -118,6 +117,8 @@ class MarigoldNormalsPipelineRuntimeParameters(DiffusionPipelineRuntimeParameter
         return {}
 
     def get_pipe_kwargs(self) -> dict:
+        import torch  # type: ignore[reportMissingImports]
+
         return {
             "image": self.get_image_pil(),
             "num_inference_steps": self.get_num_inference_steps(),
@@ -138,6 +139,8 @@ class MarigoldNormalsPipelineRuntimeParameters(DiffusionPipelineRuntimeParameter
         )
 
     def process_pipeline(self, pipe: DiffusionPipeline) -> None:
+        import torch  # type: ignore[reportMissingImports]
+
         self._node.log_params.append_to_logs("Running Marigold surface normals estimation...\n")  # type: ignore[reportAttributeAccessIssue]
 
         # Marigold pipelines don't support callback_on_step_end, so we can't track individual steps

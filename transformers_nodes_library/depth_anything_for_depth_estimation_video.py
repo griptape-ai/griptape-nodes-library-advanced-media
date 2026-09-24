@@ -2,7 +2,6 @@ import logging
 import tempfile
 from pathlib import Path
 
-import diffusers  # type: ignore[reportMissingImports]
 import PIL.Image
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
@@ -52,6 +51,8 @@ class DepthAnythingForDepthEstimationVideo(ControlNode):
         yield lambda: self._process()
 
     def _process(self) -> AsyncResult | None:
+        import diffusers  # type: ignore[reportMissingImports]
+
         input_video_artifact = self.get_parameter_value("input_video")
 
         if input_video_artifact is None:
@@ -107,6 +108,8 @@ class DepthAnythingForDepthEstimationVideo(ControlNode):
 
     def _create_placeholder_video(self, frames: list[PIL.Image.Image]) -> VideoUrlArtifact:
         """Create a placeholder video for preview purposes."""
+        import diffusers  # type: ignore[reportMissingImports]
+
         placeholder_frames = [self.params.create_preview_placeholder(frame.size) for frame in frames]
 
         with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file_obj:

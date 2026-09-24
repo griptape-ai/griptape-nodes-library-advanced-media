@@ -1,12 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import diffusers  # type: ignore[reportMissingImports]
+
 import logging
 import math
 import tempfile
 from pathlib import Path
 
-import diffusers  # type: ignore[reportMissingImports]
 import numpy as np
 import PIL.Image
-import torch  # type: ignore[reportMissingImports]
 from griptape.artifacts.video_url_artifact import VideoUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
@@ -126,6 +131,8 @@ class DepthCrafterPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
         }
 
     def publish_output_image_preview_placeholder(self) -> None:
+        import diffusers  # type: ignore[reportMissingImports]
+
         # Create a small black video placeholder
         check_cleanup_intermediates_directory()
 
@@ -152,10 +159,15 @@ class DepthCrafterPipelineRuntimeParameters(DiffusionPipelineRuntimeParameters):
         Returns:
             List of PIL Image frames from the video
         """
+        import diffusers  # type: ignore[reportMissingImports]
+
         frames = diffusers.utils.load_video(str(video_path))
         return frames
 
     def process_pipeline(self, pipe: diffusers.DiffusionPipeline) -> None:  # noqa: C901, PLR0915
+        import diffusers  # type: ignore[reportMissingImports]
+        import torch  # type: ignore[reportMissingImports]
+
         self._node.log_params.append_to_logs("Loading video frames...\n")  # type: ignore[reportAttributeAccessIssue]
 
         # Download video and get FPS

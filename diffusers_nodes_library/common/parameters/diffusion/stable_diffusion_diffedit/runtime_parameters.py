@@ -2,7 +2,6 @@ import logging
 from typing import Any
 
 import PIL.Image
-import torch  # type: ignore[reportMissingImports]
 from griptape.artifacts import ImageUrlArtifact
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
@@ -136,6 +135,8 @@ class StableDiffusionDiffEditPipelineRuntimeParameters(DiffusionPipelineRuntimeP
 
     def generate_mask(self, pipe: Any) -> Image:
         """Generate mask using the pipeline."""
+        import torch  # type: ignore[reportMissingImports]
+
         mask_array = pipe.generate_mask(
             image=self.get_image(),
             source_prompt=self.get_prompt(),
@@ -163,6 +164,8 @@ class StableDiffusionDiffEditPipelineRuntimeParameters(DiffusionPipelineRuntimeP
 
     def invert_image(self, pipe: Any) -> Any:
         """Perform DDIM inversion to get image latents."""
+        import torch  # type: ignore[reportMissingImports]
+
         return pipe.invert(
             image=self.get_image(),
             prompt=self.get_mask_prompt(),
@@ -189,6 +192,8 @@ class StableDiffusionDiffEditPipelineRuntimeParameters(DiffusionPipelineRuntimeP
 
     def process_pipeline(self, pipe: Any) -> None:
         """Custom processing for DiffEdit pipeline."""
+        import torch  # type: ignore[reportMissingImports]
+
         # First generate the mask
         mask_image = self.generate_mask(pipe)
 

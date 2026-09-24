@@ -1,3 +1,10 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
+
 import logging
 import math
 from abc import ABC, abstractmethod
@@ -5,15 +12,17 @@ from datetime import UTC, datetime
 from typing import Any
 
 import PIL.Image
-import torch  # type: ignore[reportMissingImports]
-from diffusers.pipelines.pipeline_utils import DiffusionPipeline  # type: ignore[reportMissingImports]
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import BaseNode
 from griptape_nodes.exe_types.param_components.seed_parameter import SeedParameter
 from PIL.Image import Image
 
 from pillow_nodes_library.utils import pil_to_image_artifact  # type: ignore[reportMissingImports]
-from utils.directory_utils import check_cleanup_intermediates_directory, get_intermediates_directory_path
+from utils.directory_utils import (
+    check_cleanup_intermediates_directory,
+    get_config_value,
+    get_intermediates_directory_path,
+)
 
 logger = logging.getLogger("diffusers_nodes_library")
 
@@ -89,13 +98,9 @@ class DiffusionPipelineRuntimeParameters(ABC):
         self._seed_parameter.preprocess()
 
     def process_pipeline(self, pipe: DiffusionPipeline) -> None:
-        from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
-
         num_inference_steps = self.get_num_inference_steps()
         # Default to False for better performance - preview intermediates slow down inference
-        enable_preview = GriptapeNodes.ConfigManager().get_config_value(
-            "advanced_media_library.enable_image_preview_intermediates", default=False
-        )
+        enable_preview = get_config_value("advanced_media_library.enable_image_preview_intermediates", default=False)
 
         strength_affected_steps = math.ceil(num_inference_steps * (self._node.get_parameter_value("strength") or 1))
 
@@ -171,6 +176,8 @@ class DiffusionPipelineRuntimeParameters(ABC):
         raise NotImplementedError
 
     def get_pipe_kwargs(self) -> dict:
+        import torch  # type: ignore[reportMissingImports]
+
         return {
             **self._get_pipe_kwargs(),
             "width": self.get_width(),
