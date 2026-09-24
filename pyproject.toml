@@ -40,7 +40,7 @@ packages = [
     "workflows",
 ]
 
-# `uv sync` equivalent of the JSON's `--torch-backend=auto`: pull CUDA torch
+# `uv sync` equivalent of the manifest's pinned CUDA index: pull CUDA torch
 # wheels on Windows/Linux, fall back to PyPI (MPS build) on macOS.
 [tool.uv.sources]
 torch = [
