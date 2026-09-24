@@ -622,7 +622,7 @@ loaders-image = [
 
 [[package]]
 name = "griptape-nodes-engine"
-version = "0.100.2"
+version = "0.102.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -659,9 +659,9 @@ dependencies = [
     { name = "websockets" },
     { name = "xdg-base-dirs" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8a/22/af0395325858ce7183b599ebdc725cf35b1b5aca2cbd2a9cc2cc80a863e0/griptape_nodes_engine-0.100.2.tar.gz", hash = "sha256:9c02d67676ac27522f50ccc698a7308cf332c9ebcf653747af518055915dcab5", size = 1238800, upload-time = "2026-09-07T18:02:11.251Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bd/09/7534410742fb2d61b846c192711703755a6cc25da541a8bd405705f5272a/griptape_nodes_engine-0.102.0.tar.gz", hash = "sha256:5586d0741fd4be9010f9940e33b7130365227601e8b154a7fd0248b5dffbcda3", size = 1381542, upload-time = "2026-09-24T19:50:01.657Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/df/78/1ddc0f4222ce5ac1f44b2542ef1f6555b1eccd90ca531816122378f8fbb3/griptape_nodes_engine-0.100.2-py3-none-any.whl", hash = "sha256:124e4e447be87e124aea77fe79fbc33cade8aff906f5afd30d0c9f35d56cbb79", size = 1485799, upload-time = "2026-09-07T18:02:09.783Z" },
+    { url = "https://files.pythonhosted.org/packages/35/13/0d683e0f1fdf2756c6a83ebfd47937f67c5827498b10e0742013e5f7ad77/griptape_nodes_engine-0.102.0-py3-none-any.whl", hash = "sha256:4f07e39aac4c7e7b09004294e234f6c281aec7fafc52426a8acee5fa834d709c", size = 1640619, upload-time = "2026-09-24T19:49:59.973Z" },
 ]
 
 [[package]]
@@ -694,7 +694,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "griptape-nodes-engine", specifier = ">=0.77.5" },
+    { name = "griptape-nodes-engine", specifier = ">=0.102.0" },
     { name = "pyright", specifier = ">=1.1.396" },
     { name = "pytest" },
     { name = "pytest-asyncio", specifier = ">=0.21.0" },
@@ -1448,17 +1448,37 @@ email = [
 ]
 
 [[package]]
+name = "pydantic-ai-harness"
+version = "0.31.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "genai-prices" },
+    { name = "httpx" },
+    { name = "pydantic-ai-slim" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/be/00/cebf7d148d1a1250645e06a4bbf09dc5d3754ec141fdb6cfbf00c6bdad50/pydantic_ai_harness-0.31.0.tar.gz", hash = "sha256:a8763f3bfa62a2c261c4c753270cd14ae774e7941a2e7184da3b776ac46db2be", size = 2608680, upload-time = "2026-09-12T01:07:06.526Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b7/1d/57f35d88568b9e463cf85cb04b56bbaa490072ac97090333dea314f12e91/pydantic_ai_harness-0.31.0-py3-none-any.whl", hash = "sha256:80ba336ad0c9fc2e38b90b1dbe729f7c51e4ffd7ee71ce6c1c470f25f03c3414", size = 823313, upload-time = "2026-09-12T01:07:04.722Z" },
+]
+
+[package.optional-dependencies]
+skills = [
+    { name = "pyyaml" },
+]
+
+[[package]]
 name = "pydantic-ai-skills"
-version = "1.4.0"
+version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
+    { name = "pydantic-ai-harness", extra = ["skills"] },
     { name = "pydantic-ai-slim" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0f/59/65d312c625c546b4754022d0e3e20921f9637f1e87225c0fbcbce09ddb82/pydantic_ai_skills-1.4.0.tar.gz", hash = "sha256:7303e0738a837218415f8b2e7bd5b5cbc0ceeb74850b1902c2d079550e0b9b83", size = 9095029, upload-time = "2026-08-16T13:01:26.999Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cf/d5/f3059f89077f257e43475ad81878d5ee7e03c501579bf9a7b05166a7e18a/pydantic_ai_skills-2.0.0.tar.gz", hash = "sha256:25fd5f14268f68d25d68e38bc94fb93323092d3b7d96db0b5e499c074e3d40c7", size = 9110556, upload-time = "2026-09-06T01:44:21.651Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/96/eb/a4bea0c2c97f2351938e0ae2200fb197e4953928337198a17d89f0d0bbbb/pydantic_ai_skills-1.4.0-py3-none-any.whl", hash = "sha256:bce8731a042f50c45965acc520dc883163e511c34b208f720eb62067ef5be686", size = 75744, upload-time = "2026-08-16T13:01:25.501Z" },
+    { url = "https://files.pythonhosted.org/packages/86/8a/b05c3540dfe4e1491aa3f3de06d320bb93b61dbe49b805e2d5c4465c47b5/pydantic_ai_skills-2.0.0-py3-none-any.whl", hash = "sha256:d3bed993fe65a7a4a1c6e37c71914e9594cec86114e446a332f203f2cdc755f2", size = 73558, upload-time = "2026-09-06T01:44:20.268Z" },
 ]
 
 [[package]]

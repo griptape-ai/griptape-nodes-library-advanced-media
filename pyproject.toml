@@ -8,7 +8,7 @@ authors = [
 requires-python = "~=3.12.0"
 # Edit-time dependencies only: what importing the node modules on the orchestrator needs. The
 # packages that only `process()` touches are declared in `pip_dependencies_exec` in
-# griptape_nodes_library.json, which the engine installs additively into `.venv-exec`. They are
+# griptape-nodes-library.json, which the engine installs additively into `.venv-exec`. They are
 # deliberately absent here: an extra or group would be co-resolved with the engine's own closure
 # into this one lockfile, and the two sets are not co-satisfiable.
 dependencies = [
@@ -84,7 +84,7 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [dependency-groups]
-dev = ["pyright>=1.1.396", "pytest-asyncio>=0.21.0", "ruff>=0.8.0", "pytest", "griptape-nodes-engine>=0.77.5"]
+dev = ["pyright>=1.1.396", "pytest-asyncio>=0.21.0", "ruff>=0.8.0", "pytest", "griptape-nodes-engine>=0.102.0"]
 
 [tool.pyright]
 venvPath = "."

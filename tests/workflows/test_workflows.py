@@ -55,7 +55,7 @@ async def setup_test_library(griptape_nodes: GriptapeNodes) -> AsyncGenerator[No
     # Set this library for testing
     config_manager.set_config_value(
         key=LIBRARIES_TO_REGISTER_KEY,
-        value=[str(LIBRARY_ROOT / "griptape_nodes_library.json")],
+        value=[str(LIBRARY_ROOT / "griptape-nodes-library.json")],
     )
 
     yield  # Run all tests

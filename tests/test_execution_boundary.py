@@ -1,4 +1,4 @@
-"""Pins the edit-time / execution boundary that `griptape_nodes_library.json` declares.
+"""Pins the edit-time / execution boundary that `griptape-nodes-library.json` declares.
 
 The orchestrator imports every node module and builds every node class with only
 `pip_dependencies` installed, so anything listed in `pip_dependencies_exec` has to stay
@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 LIBRARY_ROOT = Path(__file__).parents[1]
-MANIFEST = json.loads((LIBRARY_ROOT / "griptape_nodes_library.json").read_text())
+MANIFEST = json.loads((LIBRARY_ROOT / "griptape-nodes-library.json").read_text())
 
 # Distribution name -> the name it is imported under, where the two differ.
 DIST_TO_IMPORT = {
