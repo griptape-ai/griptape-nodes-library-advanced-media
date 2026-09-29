@@ -87,6 +87,7 @@ class TranslateGemmaParameters:
             revision=revision,
             device=device,
             torch_dtype=torch.bfloat16,
+            local_files_only=True,
         )
 
         return self._pipeline
