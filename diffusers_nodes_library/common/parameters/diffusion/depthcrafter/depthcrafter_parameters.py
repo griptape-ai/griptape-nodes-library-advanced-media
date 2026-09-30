@@ -78,6 +78,7 @@ class DepthCrafterPipelineParameters(DiffusionPipelineTypePipelineParameters):
             revision=unet_revision,
             torch_dtype=torch.float16,
             low_cpu_mem_usage=True,
+            local_files_only=True,
         )
 
         # Load the pipeline with float16 to match UNet dtype
@@ -86,7 +87,7 @@ class DepthCrafterPipelineParameters(DiffusionPipelineTypePipelineParameters):
             revision=revision,
             torch_dtype=torch.float16,
             variant="fp16",
-            use_local_files_only=True,
+            local_files_only=True,
             unet=unet,
         )
 
