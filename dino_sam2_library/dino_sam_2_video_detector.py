@@ -119,6 +119,13 @@ class DinoSam2VideoDetector(ControlNode):
         """Get the text threshold for object detection."""
         return float(self.get_parameter_value("text_threshold"))
 
+    def validate_before_node_run(self) -> list[Exception] | None:
+        errors = []
+        input_video = self.get_parameter_value("input_video")
+        if input_video is None or not input_video.value:
+            errors.append(ValueError("input_video is required. Connect a video to the input_video parameter."))
+        return errors or None
+
     def process(self) -> AsyncResult | None:
         yield lambda: self._process()
 
