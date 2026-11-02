@@ -37,6 +37,7 @@
         "dependencies": {
             "pip_dependencies": [
                 "accelerate>=1.6.0",
+                "anthropic>=1.15.0",
                 "av>=14.0.0",
                 "beautifulsoup4>=4.13.4",
                 "controlnet-aux>=0.0.9",
