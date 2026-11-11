@@ -2,6 +2,12 @@ SHELL := /bin/bash
 
 LIBRARY_JSON := griptape_nodes_library.json
 
+# Dev tooling lives in .venv-dev, away from the .venv the engine builds beside the manifest.
+# See "Two virtual environments" in CONTRIBUTING.md for why they must stay apart.
+export UV_PROJECT_ENVIRONMENT := .venv-dev
+# An activated .venv would otherwise make uv warn on every target.
+unexport VIRTUAL_ENV
+
 .PHONY: version/get
 version/get: ## Get version.
 	@jq -r '.metadata.library_version' $(LIBRARY_JSON)
