@@ -100,10 +100,12 @@ line-ending = "auto"
 dev = ["pyright>=1.1.396", "pytest-asyncio>=0.21.0", "ruff>=0.8.0", "pytest", "griptape-nodes-engine>=0.77.5"]
 
 [tool.pyright]
+# .venv-dev, not .venv: the dev group lives there, while .venv holds only the runtime
+# dependencies the engine installs from the manifest. See CONTRIBUTING.md for why.
 venvPath = "."
-venv = ".venv"
+venv = ".venv-dev"
 include = ["."]
-exclude = [".venv", "**/node_modules", "**/__pycache__", "**/.*", "templates"]
+exclude = [".venv", ".venv-dev", "**/node_modules", "**/__pycache__", "**/.*", "templates"]
 pythonVersion = "3.12"
 reportIncompatibleMethodOverride = false
 reportMissingImports = false
