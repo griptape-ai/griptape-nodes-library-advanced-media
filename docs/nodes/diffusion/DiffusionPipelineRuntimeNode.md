@@ -30,7 +30,7 @@ Accepts the output of a Diffusion Pipeline Builder. Setting it decides which oth
 
 ### width and height
 
-Most text-to-image and text-to-video pipelines add them. Pipelines that work from an input image or video, such as Marigold, DepthCrafter, Qwen layered and the Flux and Qwen upscale types, take the size from that input and have no width or height. Audio pipelines have neither. The default is 1024 for each on most image pipelines. WAN image to video rejects a width or height that isn't a multiple of 16.
+Most pipelines add them, including image-to-image, edit, inpaint and image-to-video types. Marigold, DepthCrafter, Qwen layered and the Flux and Qwen upscale types take the size from their input and have neither. Audio pipelines have neither. The default is 1024 for each on most image pipelines. WAN image to video rejects a width or height that isn't a multiple of 16.
 
 ### seed and randomize_seed
 

@@ -16,7 +16,7 @@ On a CUDA GPU it works down this list and stops as soon as the pipeline fits. Th
 
 1. Turns on VAE slicing, and attention slicing if less than 8 GB of GPU memory is free.
 1. Moves the whole pipeline to the GPU if it fits.
-1. Otherwise stores the transformer weights in fp8 (layerwise casting) and checks again. This step is skipped for pre-quantized models and for pipelines that don't support it, such as Z-Image. A pipeline that has no transformer fails here with an error when memory is short: Stable Diffusion 1.x, Wuerstchen, AudioLDM, Marigold and DepthCrafter. Use `Manual` for those pipelines.
+1. Otherwise stores the transformer weights in fp8 (layerwise casting) and checks again. This step is skipped for pre-quantized models and for pipelines that don't support it, such as Z-Image. A pipeline that has no transformer fails here with an error when memory is short. These are the Stable Diffusion 1.x and 2.x types (`StableDiffusionPipeline`, `StableDiffusionAttendAndExcitePipeline` and `StableDiffusionDiffEditPipeline`), Wuerstchen, AudioLDM, AudioLDM 2, Marigold and DepthCrafter. Use `Manual` for those pipelines.
 1. Otherwise turns on model offload if the largest single component fits in free memory, and sequential offload if it doesn't.
 1. If the pipeline still doesn't fit, it logs a warning and runs anyway.
 
@@ -102,7 +102,7 @@ Connect a builder to the `pipeline` input and run the workflow. The node rebuild
 
 ### Out-of-memory errors
 
-Follow the order under [If you run out of memory](#if-you-run-out-of-memory), or switch to `Automatic` (not for Stable Diffusion 1.x, Wuerstchen, AudioLDM, Marigold or DepthCrafter). Generating at a smaller `width` and `height` also lowers memory use.
+Follow the order under [If you run out of memory](#if-you-run-out-of-memory), or switch to `Automatic` (not for the pipelines listed under [Automatic mode](#automatic-mode)). Generating at a smaller `width` and `height` also lowers memory use.
 
 ### The builder fails with a model that doesn't match
 
