@@ -30,11 +30,11 @@ Accepts the output of a Diffusion Pipeline Builder. Setting it decides which oth
 
 ### width and height
 
-Image and video pipelines add them. Audio pipelines have neither. The default is 1024 for each on most image pipelines. WAN image to video rejects a width or height that isn't a multiple of 16.
+Most text-to-image and text-to-video pipelines add them. Pipelines that work from an input image or video, such as Marigold, DepthCrafter, Qwen layered and the Flux and Qwen upscale types, take the size from that input and have no width or height. Audio pipelines have neither. The default is 1024 for each on most image pipelines. WAN image to video rejects a width or height that isn't a multiple of 16.
 
 ### seed and randomize_seed
 
-`seed` defaults to 42. With `randomize_seed` on, the node writes a new random value into `seed` on every run and the field can't be edited.
+Most pipelines add them. DepthCrafter doesn't. `seed` defaults to 42. With `randomize_seed` on, the node writes a new random value into `seed` on every run and the field can't be edited.
 
 ### output_image, output_video, output_audio
 
