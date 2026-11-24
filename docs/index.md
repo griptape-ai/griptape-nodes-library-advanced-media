@@ -12,23 +12,12 @@ The Advanced Media Library runs its models **locally**, on your own GPU, with no
 
 The library also has a node that translates text and a template workflow, `qwen_edit_2509_camera_control`, which changes the camera angle of an image with Qwen-Image-Edit-2509.
 
-- **Repository**: [griptape-ai/griptape-nodes-library-advanced-media](https://github.com/griptape-ai/griptape-nodes-library-advanced-media)
 - **Requirements**: an NVIDIA GPU (CUDA) or an Apple Silicon Mac (MPS). Without one of them the nodes refuse to run, though you can still edit workflows. A Hugging Face account and access token are needed to download models, see
     [Hugging Face Models](https://docs.griptapenodes.com/en/stable/guides/integrations/hugging_face/)
 
 ## Installation
 
-The Advanced Media Library is offered during `gtn init`. You can register it then, or re-run `gtn init` later and answer `y`. See the
-[FAQ](https://docs.griptapenodes.com/en/stable/faq/#how-do-i-install-the-advanced-media-library-after-initial-setup)
-for that path.
-
-Alternatively, install it like any other library. In the editor, open **Manage → Library Management**, click **Add Library**, and paste:
-
-```text
-https://github.com/griptape-ai/griptape-nodes-library-advanced-media
-```
-
-See the [Libraries guide](https://docs.griptapenodes.com/en/stable/guides/libraries/) for general install, update and troubleshooting help.
+See the [Libraries guide](https://docs.griptapenodes.com/en/stable/guides/libraries/) for install, update and troubleshooting help.
 
 Models are not bundled. Download the ones you need to your Hugging Face cache, and the nodes list them once they are there.
 
@@ -71,14 +60,9 @@ The builder loads a model once. The Generate nodes use it. See [Memory and perfo
 
 ## Using it with the Diffusers library
 
-The [Diffusers library](https://github.com/griptape-ai/griptape-nodes-library-diffusers) also runs Diffusers pipelines, with nodes for building them in stages. You can load both libraries.
+The Diffusers library also runs Diffusers pipelines, with nodes for building them in stages. You can load both libraries.
 
 - Both read models from the same Hugging Face cache, so a model you download once is available to both.
 - Each keeps its own pipeline in memory. If you use both in one session, two copies of the same weights can sit in GPU memory. Use one library per session when memory is tight.
 - Both pin versions of `diffusers`, `transformers` and `torch`. Compare the pins in each library's `pyproject.toml` before installing both.
 - Both have nodes called Load LoRA and Clear Pipeline Cache. Each Clear Pipeline Cache only releases its own library's pipelines.
-
-## Support
-
-Found a bug or have a feature request?
-[Open an issue](https://github.com/griptape-ai/griptape-nodes-library-advanced-media/issues).

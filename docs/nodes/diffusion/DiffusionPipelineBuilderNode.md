@@ -24,7 +24,7 @@ You want a depth pass from a plate without leaving the workflow.
 1. Add **Generate Media (Diffusion Pipeline)** and connect `pipeline` from the builder.
 1. Connect the plate to the new `image` input and run the workflow. The colorized depth map is in `output_image`.
 
-The [Qwen Edit 2509 camera control template](https://github.com/griptape-ai/griptape-nodes-library-advanced-media/blob/main/workflows/templates/qwen_edit_2509_camera_control.py) shows a builder with two LoRAs feeding a Generate Media node that runs once for each prompt in a loop.
+The `qwen_edit_2509_camera_control` template shows a builder with two LoRAs feeding a Generate Media node that runs once for each prompt in a loop.
 
 ## Parameters
 

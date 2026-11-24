@@ -80,7 +80,7 @@ The library keeps one built pipeline in memory. Reuse and eviction follow from t
 - After an out-of-memory error during generation, the node unloads the pipeline so the next run starts from a clean state. A failed build removes the partly built pipeline.
 - [Clear Pipeline Cache](../nodes/utils/ClearPipelineCacheNode.md) unloads it on demand.
 
-The [Diffusers library](https://github.com/griptape-ai/griptape-nodes-library-diffusers) keeps its own pipeline in memory, separate from this one. Using both in one session can hold two copies of the same weights.
+The Diffusers library keeps its own pipeline in memory, separate from this one. Using both in one session can hold two copies of the same weights.
 
 ## Previews and intermediate files
 
